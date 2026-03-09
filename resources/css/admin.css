@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+@theme {
+  --color-admin-blue: #0054a6;
+  --color-admin-hover: #003f7d;
+  --color-accent: #fbc531;
+  --font-sans: "Segoe UI", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-base bg-slate-50 text-slate-700 antialiased h-screen overflow-hidden;
+  }
+  h1 {
+    @apply text-xl font-bold text-slate-800 tracking-tight;
+  }
+  h2 {
+    @apply text-sm font-semibold text-slate-500 tracking-wider;
+  }
+
+  select.input-field {
+    @apply pr-10 appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
+  }
+}
+
+@layer components {
+  .admin-card {
+    @apply flex flex-col h-full bg-white rounded-2xl border border-slate-200 overflow-hidden;
+  }
+  .admin-card-header {
+    @apply px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4 bg-white shrink-0;
+  }
+  .admin-card-body {
+  @apply p-6 flex-1 overflow-y-auto bg-white;
+  }
+  .btn-primary {
+    @apply bg-admin-blue hover:bg-admin-hover text-white px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2 cursor-pointer border-none;
+  }
+  .btn-success {
+    @apply bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2 cursor-pointer border-none;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-admin-blue transition-all cursor-pointer border-none;
+  }
+  .btn-danger {
+    @apply p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer border-none;
+  }
+
+  .badge {
+    @apply px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border inline-block;
+  }
+  .badge-success {
+    @apply bg-emerald-50 text-emerald-600 border-emerald-100;
+  }
+  .badge-danger {
+    @apply bg-red-50 text-red-600 border-red-100;
+  }
+  .badge-info {
+    @apply bg-sky-50 text-sky-600 border-sky-100;
+  }
+  .badge-purple {
+    @apply bg-purple-50 text-purple-600 border-purple-100;
+  }
+
+  .input-field {
+    @apply px-4 py-2 rounded-xl border border-slate-200 focus:border-admin-blue outline-none transition-all placeholder:text-slate-400 text-sm bg-white;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300;
+  }
+  .modal-overlay.active {
+    @apply opacity-100 visible;
+  }
+  .modal-content {
+    @apply bg-white w-full max-w-lg rounded-2xl shadow-2xl p-8 transform translate-y-8 transition-all duration-300;
+  }
+  .modal-overlay.active .modal-content {
+    @apply translate-y-0;
+  }
+
+  .toggle-switch {
+    @apply relative inline-flex items-center cursor-pointer;
+  }
+  .toggle-switch input {
+    @apply sr-only;
+  }
+  .toggle-bg {
+    @apply w-16 h-8 bg-red-200 rounded-full transition-all relative
+    after:content-['']
+    after:absolute
+    after:top-0.5 after:left-0.5
+    after:bg-white
+    after:border after:border-gray-300
+    after:rounded-full
+    after:w-7 after:h-7
+    after:transition-all;
+  }
+
+  .toggle-switch input:checked ~ .toggle-bg {
+    @apply bg-green-500;
+  }
+
+  .toggle-switch input:checked ~ .toggle-bg::after {
+    @apply translate-x-8 border-white;
+  }
+
+  .btn-toolbar {
+    @apply h-7 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 hover:border-admin-blue hover:text-admin-blue hover:bg-slate-50 transition-all cursor-pointer active:scale-90;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 9999px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.tree-list {
+  @apply relative ml-11 transition-all duration-300 ease-in-out opacity-0 max-h-0 overflow-hidden;
+}
+
+.tree-list.expanded {
+  @apply opacity-100 max-h-500 mt-3;
+  overflow: visible;
+}
+
+.tree-item {
+  @apply relative pb-2;
+}
+
+.tree-item::before {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: -12px;
+  width: 1px;
+  height: 100%;
+  @apply bg-slate-200;
+  z-index: 1;
+}
+
+.tree-item::after {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: 30px;
+  width: 20px;
+  height: 1px;
+  @apply bg-slate-200;
+  z-index: 1;
+}
+
+.tree-item:last-child::before {
+  height: 42px;
+}
+
+#root-menu-list > .tree-item::before,
+#root-menu-list > .tree-item::after {
+  display: none !important;
+}
+
+.tox .tox-editor-header {
+    box-shadow: none !important;
+}
+
+.tox .tox-toolbar,
+.tox .tox-toolbar__primary {
+    box-shadow: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.tox:not(.tox-tinymce-inline) .tox-editor-header {
+  padding: 0 !important;
+}
+
+.tox .tox-tbtn:hover {
+    cursor: pointer !important;
+}
+
+.tox-tinymce {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+}
+
+.tox .tox-edit-area::before {
+    border: 1px solid #0054a6 !important;
+    border-radius: 0 0 10px 10px !important;
+}
+
+.tox .tox-statusbar {
+    display: none !important;
+}
+
+.tox .tox-dialog.tox-dialog--width-lg {
+    height: 85vh !important;
+}
+
+.tox .tox-dialog.tox-dialog--width-lg .tox-dialog__body-content {
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+}
+
+.tox .tox-tbtn {
+  width: 28px !important;
+  height: 26px !important;
+  padding: 2px !important;
+}
+
+.shake {
+    animation: shake .35s ease;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+}
