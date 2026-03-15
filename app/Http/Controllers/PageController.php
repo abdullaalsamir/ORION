@@ -3,19 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
+use App\Models\Slider;
+use App\Models\CsrItem;
+use App\Models\Product;
+use App\Models\NewsItem;
+use App\Models\Concern;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CsrController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\ConcernController;
+use App\Http\Controllers\Admin\VideoGalleryController;
 use App\Http\Controllers\Admin\ScholarshipController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BoardDirectorController;
+use App\Http\Controllers\Admin\LeadershipController;
 use App\Http\Controllers\Admin\MedicalJournalController;
 use App\Http\Controllers\Admin\PriceSensitiveInformationController;
 use App\Http\Controllers\Admin\HalfYearlyReportsController;
 use App\Http\Controllers\Admin\QuarterlyReportsController;
 use App\Http\Controllers\Admin\AnnualReportsController;
-use App\Http\Controllers\Admin\CorporateGovernanceController;
-use App\Http\Controllers\Admin\ProductComplaintController;
+use App\Http\Controllers\Admin\ConnectController;
 
 class PageController extends Controller
 {
@@ -24,18 +31,18 @@ class PageController extends Controller
         $menu = Menu::where('slug', 'home')
             ->first();
 
-        $sliders = \App\Models\Slider::where('is_active', 1)
+        $sliders = Slider::where('is_active', 1)
             ->orderBy('order')->get();
 
-        $csrItems = \App\Models\CsrItem::where('is_active', 1)
+        $csrItems = CsrItem::where('is_active', 1)
             ->latest('csr_date')
             ->take(6)
             ->get();
 
-        $csrMenu = Menu::where('slug', 'csr-list')
+        $csrMenu = Menu::where('slug', 'csr')
             ->first();
 
-        $homeProducts = \App\Models\Product::where('is_active', 1)
+        $homeProducts = Product::where('is_active', 1)
             ->whereHas('generic', fn($q) => $q
                 ->where('is_active', 1))
             ->with('generic')
@@ -49,20 +56,41 @@ class PageController extends Controller
         $newsMenu = Menu::where('slug', 'news-and-announcements')
             ->first();
 
-        $pinnedNews = \App\Models\NewsItem::where('is_active', 1)
+        $pinnedNews = NewsItem::where('is_active', 1)
             ->where('is_pin', 1)
             ->latest('news_date')
             ->first();
 
-        $homeNews = \App\Models\NewsItem::where('is_active', 1)
+        $homeNews = NewsItem::where('is_active', 1)
             ->latest('news_date')
             ->take(10)
             ->get();
+
+        $homeConcerns = Concern::whereNotNull('cover_photo_path')
+            ->whereHas('menu', function ($q) {
+                $q->where('is_active', 1);
+            })
+            ->with('menu')
+            ->get()
+            ->sortBy(function ($concern) {
+                $menu = $concern->menu;
+                $orderPath = [];
+
+                $current = $menu;
+                while ($current) {
+                    array_unshift($orderPath, sprintf('%04d', $current->order));
+                    $current = $current->parent;
+                }
+
+                return implode('-', $orderPath);
+            })
+            ->values();
 
         return view('layouts.app', compact(
             'menu',
             'sliders',
             'csrItems',
+            'homeConcerns',
             'csrMenu',
             'homeProducts',
             'productsMenu',
@@ -82,7 +110,7 @@ class PageController extends Controller
         if ($menu) {
             abort_if(!$menu->isEffectivelyActive(), 404);
 
-            if ($menu->is_multifunctional && $menu->slug === 'csr-list') {
+            if ($menu->is_multifunctional && $menu->slug === 'csr') {
                 return (new CsrController)->frontendIndex($menu);
             }
             if ($menu->is_multifunctional && $menu->slug === 'news-and-announcements') {
@@ -91,11 +119,17 @@ class PageController extends Controller
             if ($menu->slug === 'board-of-directors') {
                 return (new BoardDirectorController)->frontendIndex($menu);
             }
+            if ($menu->slug === 'leadership') {
+                return (new LeadershipController)->frontendIndex($menu);
+            }
             if ($menu->slug === 'scholarship') {
                 return (new ScholarshipController)->frontendIndex($menu);
             }
             if ($menu->slug === 'products') {
                 return (new ProductController)->frontendIndex($menu);
+            }
+            if ($menu->is_multifunctional && $menu->slug === 'video-gallery') {
+                return (new VideoGalleryController)->frontendIndex($menu);
             }
             if ($menu->slug === 'medical-journals') {
                 return (new MedicalJournalController)->frontendIndex($menu);
@@ -112,11 +146,20 @@ class PageController extends Controller
             if ($menu->slug === 'annual-reports') {
                 return (new AnnualReportsController)->frontendIndex($menu);
             }
-            if ($menu->slug === 'corporate-governance') {
-                return (new CorporateGovernanceController)->frontendIndex($menu);
+            if ($menu->slug === 'connect') {
+                return (new ConnectController)->frontendIndex($menu);
             }
-            if ($menu->slug === 'product-complaint') {
-                return (new ProductComplaintController)->frontendIndex($menu);
+
+            $rootParent = $menu;
+            while ($rootParent->parent_id) {
+                $rootParent = $rootParent->parent;
+            }
+            if ($rootParent->slug === 'businesses') {
+                return (new ConcernController)->frontendShow($menu);
+            }
+
+            if ($menu->slug === 'photo-gallery') {
+                return (new ConcernController)->frontendPhotoGallery($menu);
             }
 
             abort_if($menu->children()->exists(), 404);
@@ -147,11 +190,7 @@ class PageController extends Controller
                 return (new AnnualReportsController)->servePdf($parentPath, $itemSlug);
             }
 
-            if ($parentMenu->slug === 'corporate-governance' && str_ends_with($itemSlug, '.pdf')) {
-                return (new CorporateGovernanceController)->servePdf($parentPath, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'csr-list') {
+            if ($parentMenu->slug === 'csr') {
                 return (new CsrController)->frontendShow($parentMenu, $itemSlug);
             }
 
@@ -164,6 +203,10 @@ class PageController extends Controller
 
             if ($parentMenu->slug === 'board-of-directors') {
                 return (new BoardDirectorController)->frontendShow($parentMenu, $itemSlug);
+            }
+
+            if ($parentMenu->slug === 'leadership') {
+                return (new LeadershipController)->frontendShow($parentMenu, $itemSlug);
             }
         }
 
@@ -192,7 +235,7 @@ class PageController extends Controller
             abort(404);
 
         if ($menu->is_multifunctional) {
-            if ($menu->slug === 'csr-list') {
+            if ($menu->slug === 'csr') {
                 return (new CsrController)->serveCsrImage($filename);
             }
             if ($menu->slug === 'news-and-announcements') {
@@ -201,8 +244,23 @@ class PageController extends Controller
             if ($menu->slug === 'board-of-directors') {
                 return (new BoardDirectorController)->serveImage($filename);
             }
+            if ($menu->slug === 'leadership') {
+                return (new LeadershipController)->serveImage($filename);
+            }
             if ($menu->slug === 'scholarship') {
                 return (new ScholarshipController)->serveScholarImage($filename);
+            }
+        }
+
+        if ($menu && str_starts_with($menu->full_slug, 'businesses/')) {
+            $coverPath = storage_path("app/public/concerns/{$menu->slug}/cover-photo/{$filename}");
+            if (file_exists($coverPath)) {
+                return response()->file($coverPath);
+            }
+
+            $galleryPath = storage_path("app/public/concerns/{$menu->slug}/photo-gallery/{$filename}");
+            if (file_exists($galleryPath)) {
+                return response()->file($galleryPath);
             }
         }
 

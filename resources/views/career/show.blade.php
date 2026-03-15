@@ -227,7 +227,7 @@
                 Your CV has been successfully uploaded.
             </p>
 
-            <button onclick="closeCareerSuccessModal()"
+            <button onclick="closeSuccessModal()"
                 class="w-full h-12 rounded-xl bg-red-50 text-red-500 font-bold border border-red-200 hover:bg-red-100 transition-colors flex items-center justify-center cursor-pointer">
                 Close
             </button>

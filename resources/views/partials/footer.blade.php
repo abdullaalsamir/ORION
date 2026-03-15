@@ -1,6 +1,4 @@
 @php
-    $footer = \App\Models\Footer::find(1) ?? new \App\Models\Footer();
-
     $quickLinks = collect($footer->quick_links ?? [])
         ->map(function ($item) {
             if (empty($item['menu_id'])) {

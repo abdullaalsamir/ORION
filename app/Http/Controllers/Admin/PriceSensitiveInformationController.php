@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PriceSensitiveInformation;
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -19,7 +20,7 @@ class PriceSensitiveInformationController extends Controller
             ->orderBy('order', 'asc')
             ->get()
             ->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item->publication_date)->format('Y');
+                return Carbon::parse($item->publication_date)->format('Y');
             });
 
         return view('admin.price-sensitive-information.index', compact('menu', 'groupedItems'));

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CsrItem;
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -13,16 +14,16 @@ class CsrController extends Controller
 {
     public function index()
     {
-        $menu = Menu::where('slug', 'csr-list')->firstOrFail();
+        $menu = Menu::where('slug', 'csr')->firstOrFail();
 
         $groupedCsr = CsrItem::orderBy('csr_date', 'desc')
             ->orderBy('order', 'desc')
             ->get()
             ->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item->csr_date)->format('Y-m-d');
+                return Carbon::parse($item->csr_date)->format('Y-m-d');
             });
 
-        return view('admin.csr-list.index', compact('menu', 'groupedCsr'));
+        return view('admin.csr.index', compact('menu', 'groupedCsr'));
     }
 
     private function generateUniqueSlug($title, $ignoreId = null)

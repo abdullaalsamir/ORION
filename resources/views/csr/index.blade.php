@@ -6,34 +6,48 @@
 @section('meta_image', asset('logo.svg'))
 
 @section('content')
-    <div id="main-smooth-wrapper" class="smooth-container">
-        <div id="csr-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
-            @foreach($items as $item)
-                <a href="{{ url($menu->full_slug . '/' . $item->slug) }}"
-                    class="index-card group bg-white rounded-xl overflow-hidden flex flex-col">
+    <div>
+        <p class="text-slate-500 text-base text-justify">
+            At Orion, we are committed to initiatives that contribute to a better and more sustainable world. Corporate
+            Social Responsibility (CSR) is therefore a core focus of our operations. Through our CSR initiatives, we aim to
+            respond to social needs, promote environmental sustainability, uphold ethical labor practices and fair trade
+            principles, and actively participate in philanthropy and community engagement. As a socially responsible
+            business conglomerate, we prioritize these values and integrate them into every aspect of our organization.
+        </p>
+    </div>
 
-                    <div class="aspect-video overflow-hidden shimmer relative border-b border-slate-200">
-                        <img src="{{ url($menu->full_slug . '/' . basename($item->image_path)) }}"
-                            class="product-image w-full h-full object-cover transition-transform duration-700">
-                    </div>
+    <div class="mt-8">
 
-                    <div class="p-6 flex flex-col grow">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3">
-                            {{ $item->csr_date->format('d F, Y') }}
-                        </span>
-                        <h3
-                            class="text-xl font-semibold text-slate-900 capitalize group-hover:text-orion-blue transition-all duraion-300 line-clamp-3 mb-3">
-                            {{ $item->title }}
-                        </h3>
-                        <p class="text-slate-500 text-base leading-relaxed line-clamp-3">
-                            {!! $item->description !!}
-                        </p>
-                    </div>
-                </a>
-            @endforeach
+        <div id="main-smooth-wrapper" class="smooth-container">
+            <div id="csr-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+                @foreach($items as $item)
+                    <a href="{{ url($menu->full_slug . '/' . $item->slug) }}"
+                        class="index-card group bg-white rounded-xl overflow-hidden flex flex-col">
+
+                        <div class="aspect-video overflow-hidden shimmer relative border-b border-slate-200">
+                            <img src="{{ url($menu->full_slug . '/' . basename($item->image_path)) }}"
+                                class="product-image w-full h-full object-cover transition-transform duration-700">
+                        </div>
+
+                        <div class="p-6 flex flex-col grow">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3">
+                                {{ $item->csr_date->format('d F, Y') }}
+                            </span>
+                            <h3
+                                class="text-xl font-semibold text-slate-900 capitalize group-hover:text-orion-blue transition-all duraion-300 line-clamp-3 mb-3">
+                                {{ $item->title }}
+                            </h3>
+                            <span class="text-slate-500 text-base leading-relaxed line-clamp-3">
+                                {!! $item->description !!}
+                            </span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+            <div>
+                {{ $items->links() }}
+            </div>
         </div>
-        <div>
-            {{ $items->links() }}
-        </div>
+
     </div>
 @endsection

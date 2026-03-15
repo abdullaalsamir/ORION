@@ -40,16 +40,19 @@
         @include('partials.swiper-slider')
     @endif
 
-    <main class="grow w-full {{ request()->is('/') ? 'pt-0' : 'pt-22.5' }} pb-16">
+    <main class="grow w-full {{ request()->is('/') ? 'pt-0' : 'pt-22.5' }} @yield('main_pb', 'pb-16')">
+        @yield('fullwidth')
         <div class="container mx-auto w-[90%] max-w-350">
             @isset($menu)
                 <div class="flex flex-col">
                     <div class="w-full">
-                        <h1 class="w-full">
-                            <span class="px-4 {{ request()->is('/') ? 'text-4xl' : '' }}">
-                                {{ request()->is('/') ? 'Welcome to Orion Pharma' : $menu->name }}
-                            </span>
-                        </h1>
+                        @if(!request()->is('/'))
+                            <h1 class="w-full">
+                                <span class="px-4">
+                                    {{ $menu->name }}
+                                </span>
+                            </h1>
+                        @endif
                     </div>
 
                     @if(!empty($menu->content))
@@ -67,7 +70,14 @@
     </main>
 
     @if(request()->is('/'))
-        <div class="container mx-auto w-[90%] max-w-350 pb-16">
+
+        <div class="container mx-auto w-[90%] max-w-350">
+            @include('partials.home-stats')
+        </div>
+
+        @include('partials.home-concerns')
+
+        <div class="container mx-auto w-[90%] max-w-350">
             @include('partials.home-csr')
             @include('partials.home-products')
             @include('partials.home-news-and-announcements')

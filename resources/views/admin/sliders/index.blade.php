@@ -91,21 +91,21 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="relative">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1</label>
-                        <input type="text" name="header_1" maxlength="22" required class="input-field w-full"
-                            oninput="updateCount(this, 'addC1', 22)">
-                        <span id="addC1" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/22</span>
+                        <input type="text" name="header_1" maxlength="30" required class="input-field w-full"
+                            oninput="updateCount(this, 'addC1', 30)">
+                        <span id="addC1" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                     <div class="relative">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Blue)</label>
-                        <input type="text" name="header_2" maxlength="22" required class="input-field w-full"
-                            oninput="updateCount(this, 'addC2', 22)">
-                        <span id="addC2" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/22</span>
+                        <input type="text" name="header_2" maxlength="30" required class="input-field w-full"
+                            oninput="updateCount(this, 'addC2', 30)">
+                        <span id="addC2" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                 </div>
 
                 <div class="relative">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text</label>
-                    <textarea name="description" maxlength="150" required class="input-field w-full h-24 py-3 resize-none"
+                    <textarea name="description" maxlength="150" class="input-field w-full h-24 py-3 resize-none"
                         oninput="updateCount(this, 'addCD', 150)"></textarea>
                     <span id="addCD" class="absolute right-3 bottom-2 text-[9px] text-slate-300 font-bold">0/150</span>
                 </div>
@@ -157,23 +157,23 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="relative">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1</label>
-                        <input type="text" name="header_1" id="editH1" maxlength="22" required class="input-field w-full"
-                            oninput="updateCount(this, 'editC1', 22)">
+                        <input type="text" name="header_1" id="editH1" maxlength="30" required class="input-field w-full"
+                            oninput="updateCount(this, 'editC1', 30)">
                         <span id="editC1"
-                            class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/22</span>
+                            class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                     <div class="relative">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Blue)</label>
-                        <input type="text" name="header_2" id="editH2" maxlength="22" required class="input-field w-full"
-                            oninput="updateCount(this, 'editC2', 22)">
+                        <input type="text" name="header_2" id="editH2" maxlength="30" required class="input-field w-full"
+                            oninput="updateCount(this, 'editC2', 30)">
                         <span id="editC2"
-                            class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/22</span>
+                            class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                 </div>
 
                 <div class="relative">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text</label>
-                    <textarea name="description" id="editDesc" maxlength="150" required
+                    <textarea name="description" id="editDesc" maxlength="150"
                         class="input-field w-full h-24 py-3 resize-none"
                         oninput="updateCount(this, 'editCD', 150)"></textarea>
                     <span id="editCD" class="absolute right-3 bottom-2 text-[9px] text-slate-300 font-bold">0/150</span>

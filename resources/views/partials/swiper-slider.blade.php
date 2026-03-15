@@ -6,14 +6,15 @@
                     <img src="{{ asset($slider->image_path) }}" class="w-full h-full object-cover"
                         alt="{{ $slider->header_1 }}">
 
-                    <div class="absolute inset-0 bg-linear-to-r from-black/75 to-transparent to-50% flex items-center">
+                    <div
+                        class="absolute inset-0 flex items-center bg-[linear-gradient(to_right,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.5)_25%,rgba(0,0,0,0)_50%)]">
                         <div class="container mx-auto w-[90%] max-w-350">
-                            <div class="max-w-2xl text-white space-y-4 slide-content">
-                                <span class="text-4xl md:text-6xl font-bold leading-tight">
+                            <div class="max-w-3xl space-y-4 slide-content">
+                                <span class="text-5xl text-white text-shadow-lg font-bold leading-tight">
                                     {{ $slider->header_1 }} <br>
-                                    <span class="text-blue-400">{{ $slider->header_2 }}</span>
+                                    <span class="text-amber-300">{{ $slider->header_2 }}</span>
                                 </span>
-                                <p class="text-lg opacity-90">
+                                <p class="text-lg text-white opacity-90">
                                     {{ $slider->description }}
                                 </p>
                                 @if($slider->link_url)
@@ -31,8 +32,8 @@
             @endforeach
         </div>
 
-        <div class="swiper-button-next text-white! after:text-2xl!"></div>
-        <div class="swiper-button-prev text-white! after:text-2xl!"></div>
+        <div class="swiper-button-next text-white!"></div>
+        <div class="swiper-button-prev text-white!"></div>
 
         <div class="swiper-pagination"></div>
     </div>

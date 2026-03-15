@@ -334,6 +334,98 @@ export function initMenuPage() {
     if(editActive) editActive.onchange = () => lbl.innerText = editActive.checked ? 'Active' : 'Inactive';
 }
 
+export function initVideoGalleryPage() {
+    if (!window.location.pathname.includes('/admin/video-gallery')) return;
+
+    window.curVideoId = null;
+
+    const list = document.getElementById('video-sortable-list');
+    if (list) {
+        new Sortable(list, {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: () => {
+                let orders = [];
+                list.querySelectorAll('.sortable-video-item').forEach((el, index) => {
+                    orders.push({ id: el.dataset.id, order: index + 1 });
+                });
+                fetch('/admin/video-gallery-actions/update-order', {
+                    method: 'POST',
+                    headers: { ...fetchHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orders })
+                }).then(handleResponse);
+            }
+        });
+    }
+
+    window.openVideoAddModal = () => {
+        document.getElementById('addVideoForm').reset();
+        document.getElementById('addThumbPreview').innerHTML = `<i class="fas fa-image text-3xl text-slate-300 mb-2 group-hover:text-admin-blue"></i><span class="text-slate-400 font-bold text-[9px] uppercase tracking-widest text-center px-4">Upload Cover</span>`;
+        document.getElementById('addVideoName').innerHTML = 'Select Video File<br>(Max 200MB)';
+        
+        const modal = document.getElementById('addModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('active'), 10);
+    };
+
+    window.openVideoEditModal = (item) => {
+        window.curVideoId = item.id;
+        document.getElementById('editTitle').value = item.title;
+        document.getElementById('editActive').checked = item.is_active == 1;
+        document.getElementById('videoStatusLabel').innerText = item.is_active == 1 ? 'Active' : 'Inactive';
+        
+        document.getElementById('editThumbPreview').innerHTML = `<img src="/video-gallery-files/thumbnails/${item.thumbnail_path.split('/').pop()}?t=${Date.now()}" class="w-full h-full object-cover">`;
+        document.getElementById('editVideoName').innerText = 'Click to Replace Video';
+
+        const modal = document.getElementById('editModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('active'), 10);
+    };
+
+    window.deleteVideo = (id) => {
+        if (confirm('Delete this Video?')) {
+            fetch(`/admin/video-gallery-actions/${id}`, { method: 'DELETE', headers: fetchHeaders() })
+            .then(handleResponse).then(() => Turbo.visit(window.location.href));
+        }
+    };
+
+    document.getElementById('editActive')?.addEventListener('change', function() {
+        document.getElementById('videoStatusLabel').innerText = this.checked ? 'Active' : 'Inactive';
+    });
+
+    document.getElementById('addVideoForm').onsubmit = function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('addSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
+        
+        fetch('/admin/video-gallery-actions/store', {
+            method: 'POST',
+            body: new FormData(this),
+            headers: fetchHeaders()
+        }).then(handleResponse).then(() => Turbo.visit(window.location.href))
+          .finally(() => { btn.disabled = false; btn.innerText = 'Upload Video'; });
+    };
+
+    document.getElementById('editForm').onsubmit = function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('editSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+        
+        const fd = new FormData(this);
+        fd.append('_method', 'PUT');
+        fd.set('is_active', document.getElementById('editActive').checked ? 1 : 0);
+
+        fetch(`/admin/video-gallery-actions/${window.curVideoId}`, {
+            method: 'POST',
+            body: fd,
+            headers: fetchHeaders()
+        }).then(handleResponse).then(() => Turbo.visit(window.location.href))
+          .finally(() => { btn.disabled = false; btn.innerText = 'Update Video'; });
+    };
+}
+
 export function initPagesPage() {
     const modal = document.getElementById('pageModal');
     if (!modal || !window.location.pathname.includes('/admin/pages')) return;
@@ -755,7 +847,7 @@ export function initCSRPage() {
     initEditor('#addDesc');
     initEditor('#editDesc');
 
-    setupModule('csr-list', '/admin/csr-actions/store', '/admin/csr-actions', 'curCsrId');
+    setupModule('csr', '/admin/csr-actions/store', '/admin/csr-actions', 'curCsrId');
     
     window.openCsrAddModal = () => {
         const form = document.querySelector('#addModal form');
@@ -997,8 +1089,75 @@ export function initDirectorsPage() {
     };
 }
 
+export function initLeadershipPage() {
+    if (!window.location.pathname.includes('/admin/leadership')) return;
+
+    initEditor('#addDesc');
+    initEditor('#editDesc');
+
+    setupModule('leadership', '/admin/leadership-actions/store', '/admin/leadership-actions', 'curLeadershipId');
+
+    window.openLeadershipAddModal = () => {
+        const form = document.querySelector('#addModal form');
+        if (form) form.reset();
+
+        if (typeof tinymce !== 'undefined' && tinymce.get('addDesc')) {
+            tinymce.get('addDesc').setContent('');
+        }
+
+        const modal = document.getElementById('addModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('active'), 10);
+    };
+
+    window.openLeadershipEditModal = (item, slug) => {
+        window.curLeadershipId = item.id;
+
+        document.getElementById('editName').value = item.name;
+        document.getElementById('editDesignation').value = item.designation;
+        document.getElementById('editActive').checked = item.is_active == 1;
+
+        document.getElementById('editPreview').innerHTML =
+            `<img src="/${slug}/${item.image_path.split('/').pop()}?t=${Date.now()}" 
+             class="w-full h-full object-cover">`;
+
+        const content = item.description || '';
+        const descTextarea = document.getElementById('editDesc');
+        if (descTextarea) descTextarea.value = content;
+
+        if (typeof tinymce !== 'undefined') {
+            const editor = tinymce.get('editDesc');
+            if (editor) {
+                editor.setContent(content);
+            } else {
+                initEditor('#editDesc');
+                setTimeout(() => {
+                    if (tinymce.get('editDesc')) {
+                        tinymce.get('editDesc').setContent(content);
+                    }
+                }, 100);
+            }
+        }
+
+        const modal = document.getElementById('editModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('active'), 10);
+    };
+
+    window.deleteLeadership = (id) => {
+        if (confirm('Delete this Profile?')) {
+            fetch(`/admin/leadership-actions/${id}`, {
+                method: 'DELETE',
+                headers: fetchHeaders()
+            })
+            .then(handleResponse)
+            .then(() => Turbo.visit(window.location.href));
+        }
+    };
+}
+
 export function initReportModule() {
-    const map = { 'annual-reports': '/admin/annual-reports-actions', 'quarterly-reports': '/admin/quarterly-reports-actions', 'half-yearly-reports': '/admin/half-yearly-reports-actions', 'price-sensitive-information': '/admin/price-sensitive-information-actions', 'corporate-governance': '/admin/corporate-governance-actions' };
+    const map = { 'annual-reports': '/admin/annual-reports-actions', 'quarterly-reports': '/admin/quarterly-reports-actions', 'half-yearly-reports': '/admin/half-yearly-reports-actions', 'price-sensitive-information': '/admin/price-sensitive-information-actions' };
     const seg = window.location.pathname.split('/')[2];
     const base = map[seg];
     if (!base) return;
@@ -1132,9 +1291,167 @@ export function initNewsPage() {
     window.deleteNews = (id) => { if(confirm('Delete this News?')) { fetch(`/admin/news-actions/${id}`, { method: 'DELETE', headers: fetchHeaders() }) .then(handleResponse) .then(() => Turbo.visit(window.location.href)); } };
 }
 
-export function initComplaintsPage() {
-    if (!window.location.pathname.includes('product-complaint')) return;
-    window.deleteComplaint = (id) => { if(confirm('Delete this Complaint?')) fetch(`/admin/product-complaint-actions/${id}`, { method: 'DELETE', headers: fetchHeaders() }).then(handleResponse).then(() => Turbo.visit(window.location.href, { action: "replace" })); };
+export function initConnectsPage() {
+    if (!window.location.pathname.includes('connect')) return;
+    window.deleteQuery = (id) => {
+        if (!confirm('Delete this Query?')) return;
+
+        fetch(`/admin/connect-actions/${id}`, {
+            method: 'DELETE',
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => Turbo.visit(window.location.href, { action: "replace" }));
+    };
+}
+
+export function initConcernsPage() {
+    if (!document.querySelector('.leaf-menu-item') || !window.location.pathname.includes('/admin/businesses')) return;
+
+    window.currentGalleryIdToReplace = null;
+
+    window.loadConcern = (menuId, el) => {
+        document.querySelectorAll('.leaf-menu-item').forEach(i => i.classList.remove('active', 'border-admin-blue', 'bg-slate-100'));
+        el.classList.add('active', 'border-admin-blue', 'bg-slate-100');
+        
+        fetch(`/admin/concern-actions/fetch/${menuId}`, { headers: fetchHeaders() })
+            .then(handleResponse)
+            .then(data => { 
+                document.getElementById('concernArea').innerHTML = data.html;
+                
+                initEditor('#concernDesc');
+                
+                const galleryList = document.getElementById('gallery-sortable');
+                if (galleryList) {
+                    new Sortable(galleryList, {
+                        animation: 150,
+                        handle: '.drag-handle',
+                        onEnd: () => {
+                            let orders = [];
+                            galleryList.querySelectorAll('.sortable-gallery-item').forEach((el, index) => {
+                                orders.push({ id: el.dataset.id, order: index + 1 });
+                            });
+                            fetch('/admin/concern-actions/update-gallery-order', {
+                                method: 'POST',
+                                headers: { ...fetchHeaders(), 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ orders })
+                            }).then(handleResponse);
+                        }
+                    });
+                }
+            });
+    };
+
+    window.toggleRedirectLabel = (el, menuId) => {
+        const isRedirect = el.checked ? 1 : 0;
+        
+        fetch(`/admin/concern-actions/update-redirect/${menuId}`, {
+            method: 'POST',
+            body: JSON.stringify({ is_redirect: isRedirect }),
+            headers: { ...fetchHeaders(), 'Content-Type': 'application/json' }
+        }).then(handleResponse).then(() => {
+            const lbl = document.getElementById('redirectLabel');
+            if (lbl) {
+                lbl.innerText = el.checked ? 'Redirect On' : 'Redirect Off';
+                lbl.classList.toggle('text-admin-blue', el.checked);
+                lbl.classList.toggle('text-slate-600', !el.checked);
+            }
+        });
+    };
+
+    window.submitInfo = (e, menuId) => {
+        e.preventDefault();
+        fetch(`/admin/concern-actions/update-info/${menuId}`, {
+            method: 'POST',
+            body: new FormData(e.target),
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => alert('Web Address Updated!'));
+    };
+
+    window.submitDesc = (e, menuId) => {
+        e.preventDefault();
+        if (typeof tinymce !== 'undefined') tinymce.triggerSave();
+        fetch(`/admin/concern-actions/update-description/${menuId}`, {
+            method: 'POST',
+            body: new FormData(e.target),
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => alert('Description Updated!'));
+    };
+
+    window.submitCover = (input, menuId) => {
+        if (!input.files || input.files.length === 0) return;
+        const fd = new FormData();
+        fd.append('image', input.files[0]);
+        
+        fetch(`/admin/concern-actions/upload-cover/${menuId}`, {
+            method: 'POST',
+            body: fd,
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => document.querySelector('.leaf-menu-item.active').click());
+    };
+
+    window.deleteCover = (menuId) => {
+        if (confirm('Delete Cover Photo?')) {
+            fetch(`/admin/concern-actions/delete-cover/${menuId}`, {
+                method: 'DELETE',
+                headers: fetchHeaders()
+            })
+            .then(handleResponse)
+            .then(() => document.querySelector('.leaf-menu-item.active').click());
+        }
+    };
+
+    window.submitGallery = (input, menuId) => {
+        if (!input.files || input.files.length === 0) return;
+        const fd = new FormData();
+        for(let i = 0; i < input.files.length; i++){
+            fd.append('photos[]', input.files[i]);
+        }
+        
+        fetch(`/admin/concern-actions/upload-gallery/${menuId}`, {
+            method: 'POST',
+            body: fd,
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => document.querySelector('.leaf-menu-item.active').click());
+    };
+
+    window.triggerGalleryReplace = (galleryId) => {
+        window.currentGalleryIdToReplace = galleryId;
+        document.getElementById('galleryReplaceInput').click();
+    };
+
+    window.submitReplaceGallery = (input) => {
+        if (!input.files || input.files.length === 0 || !window.currentGalleryIdToReplace) return;
+        const fd = new FormData();
+        fd.append('image', input.files[0]);
+        
+        fetch(`/admin/concern-actions/replace-gallery/${window.currentGalleryIdToReplace}`, {
+            method: 'POST',
+            body: fd,
+            headers: fetchHeaders()
+        })
+        .then(handleResponse)
+        .then(() => document.querySelector('.leaf-menu-item.active').click());
+    };
+
+    window.deleteGalleryItem = (galleryId) => {
+        if (confirm('Delete this Gallery Photo?')) {
+            fetch(`/admin/concern-actions/delete-gallery/${galleryId}`, {
+                method: 'DELETE',
+                headers: fetchHeaders()
+            })
+            .then(handleResponse)
+            .then(() => document.querySelector('.leaf-menu-item.active').click());
+        }
+    };
 }
 
 export function initCareerPage() {
@@ -1447,13 +1764,16 @@ document.addEventListener('turbo:load', () => {
     initBannersPage();
     initSlidersPage();
     initProductsPage();
+    initConcernsPage();
     initCSRPage();
     initScholarshipPage();
     initMedicalJournalsPage();
     initDirectorsPage();
+    initVideoGalleryPage();
+    initLeadershipPage();
     initReportModule();
     initNewsPage();
-    initComplaintsPage();
+    initConnectsPage();
     initCareerPage();
     initFooterPage();
     initSettingsPage();

@@ -7,18 +7,20 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\ConcernController;
 use App\Http\Controllers\Admin\CsrController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\VideoGalleryController;
 use App\Http\Controllers\Admin\ScholarshipController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BoardDirectorController;
+use App\Http\Controllers\Admin\LeadershipController;
 use App\Http\Controllers\Admin\MedicalJournalController;
 use App\Http\Controllers\Admin\PriceSensitiveInformationController;
 use App\Http\Controllers\Admin\HalfYearlyReportsController;
 use App\Http\Controllers\Admin\QuarterlyReportsController;
 use App\Http\Controllers\Admin\AnnualReportsController;
-use App\Http\Controllers\Admin\CorporateGovernanceController;
-use App\Http\Controllers\Admin\ProductComplaintController;
+use App\Http\Controllers\Admin\ConnectController;
 use App\Http\Controllers\Admin\CareerController;
 use App\Http\Controllers\Admin\FooterController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -77,6 +79,19 @@ Route::prefix('admin')
             Route::post('/update-order', [ScholarshipController::class, 'updateOrder'])->name('update-order');
         });
 
+        Route::prefix('concern-actions')->name('concerns.')->group(function () {
+            Route::get('/fetch/{menu}', [ConcernController::class, 'fetch'])->name('fetch');
+            Route::post('/update-info/{menu}', [ConcernController::class, 'updateInfo'])->name('update-info');
+            Route::post('/update-redirect/{menu}', [ConcernController::class, 'updateRedirect'])->name('update-redirect');
+            Route::post('/update-description/{menu}', [ConcernController::class, 'updateDescription'])->name('update-description');
+            Route::post('/upload-cover/{menu}', [ConcernController::class, 'uploadCover'])->name('upload-cover');
+            Route::delete('/delete-cover/{menu}', [ConcernController::class, 'deleteCover'])->name('delete-cover');
+            Route::post('/upload-gallery/{menu}', [ConcernController::class, 'uploadGallery'])->name('upload-gallery');
+            Route::post('/replace-gallery/{concernGallery}', [ConcernController::class, 'replaceGallery'])->name('replace-gallery');
+            Route::delete('/delete-gallery/{concernGallery}', [ConcernController::class, 'deleteGallery'])->name('delete-gallery');
+            Route::post('/update-gallery-order', [ConcernController::class, 'updateGalleryOrder'])->name('update-gallery-order');
+        });
+
         Route::prefix('csr-actions')->name('csr.')->group(function () {
             Route::post('/store', [CsrController::class, 'store'])->name('store');
             Route::put('/{csrItem}', [CsrController::class, 'update'])->name('update');
@@ -91,11 +106,25 @@ Route::prefix('admin')
             Route::post('/update-order', [NewsController::class, 'updateOrder'])->name('update-order');
         });
 
+        Route::prefix('video-gallery-actions')->name('video-gallery.')->group(function () {
+            Route::post('/store', [VideoGalleryController::class, 'store'])->name('store');
+            Route::put('/{videoGallery}', [VideoGalleryController::class, 'update'])->name('update');
+            Route::delete('/{videoGallery}', [VideoGalleryController::class, 'delete'])->name('delete');
+            Route::post('/update-order', [VideoGalleryController::class, 'updateOrder'])->name('update-order');
+        });
+
         Route::prefix('director-actions')->name('directors.')->group(function () {
             Route::post('/store', [BoardDirectorController::class, 'store'])->name('store');
             Route::put('/{boardDirector}', [BoardDirectorController::class, 'update'])->name('update');
             Route::delete('/{boardDirector}', [BoardDirectorController::class, 'delete'])->name('delete');
             Route::post('/update-order', [BoardDirectorController::class, 'updateOrder'])->name('update-order');
+        });
+
+        Route::prefix('leadership-actions')->name('leadership.')->group(function () {
+            Route::post('/store', [LeadershipController::class, 'store'])->name('store');
+            Route::put('/{leadership}', [LeadershipController::class, 'update'])->name('update');
+            Route::delete('/{leadership}', [LeadershipController::class, 'delete'])->name('delete');
+            Route::post('/update-order', [LeadershipController::class, 'updateOrder'])->name('update-order');
         });
 
         Route::prefix('journal-actions')->name('medical-journals.')->group(function () {
@@ -133,16 +162,8 @@ Route::prefix('admin')
             Route::post('/update-order', [PriceSensitiveInformationController::class, 'updateOrder'])->name('update-order');
         });
 
-        Route::prefix('corporate-governance-actions')->name('corporate-governance.')->group(function () {
-            Route::post('/store', [CorporateGovernanceController::class, 'store'])->name('store');
-            Route::put('/{corporateGovernance}', [CorporateGovernanceController::class, 'update'])->name('update');
-            Route::delete('/{corporateGovernance}', [CorporateGovernanceController::class, 'delete'])->name('delete');
-            Route::post('/update-order', [CorporateGovernanceController::class, 'updateOrder'])->name('update-order');
-        });
-
-        Route::prefix('product-complaint-actions')->name('complaint.')->group(function () {
-            Route::delete('/{complaint}', [ProductComplaintController::class, 'delete'])->name('delete');
-        });
+        Route::delete('connect-actions/{connect}', [ConnectController::class, 'delete'])
+            ->name('connect.delete');
 
         Route::prefix('career')->name('career.')->group(function () {
             Route::get('/', [CareerController::class, 'index'])->name('index');
@@ -187,6 +208,12 @@ Route::get('{path}/{filename}', [NewsController::class, 'serveNewsPdf'])
     ->where('path', '.*news-and-announcements')
     ->where('filename', '.*\.pdf$');
 
+Route::get('video-gallery-files/videos/{filename}', [VideoGalleryController::class, 'serveVideo'])
+    ->where('filename', '.*');
+
+Route::get('video-gallery-files/thumbnails/{filename}', [VideoGalleryController::class, 'serveThumbnail'])
+    ->where('filename', '.*\.webp$');
+
 Route::get('{path}/{year}/{filename}', [MedicalJournalController::class, 'servePdf'])
     ->where('path', '.*')
     ->where('year', '^[0-9]{4}$')
@@ -208,16 +235,12 @@ Route::get('{path}/{filename}', [AnnualReportsController::class, 'servePdf'])
     ->where('path', '.*annual-reports')
     ->where('filename', '.*\.pdf$');
 
-Route::get('{path}/{filename}', [CorporateGovernanceController::class, 'servePdf'])
-    ->where('path', '.*corporate-governance')
-    ->where('filename', '.*\.pdf$');
-
 Route::get('{path}/{filename}', [PageController::class, 'image'])
     ->where('path', '.*')
     ->where('filename', '^[a-zA-Z0-9-]+\.webp$');
 
-Route::post('/product-complaint/submit', [ProductComplaintController::class, 'store'])
-    ->name('complaint.submit');
+Route::post('/connect', [ConnectController::class, 'store'])
+    ->name('connect.submit');
 
 Route::get('/career', [CareerController::class, 'careerIndex'])->name('career.index');
 Route::get('/career/{slug}', [CareerController::class, 'careerShow'])->name('career.show');

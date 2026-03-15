@@ -164,12 +164,20 @@ class MenuController extends Controller
 
         abort_if(!$menu, 404);
 
-        if ($menu->slug === 'csr-list') {
+        if ($menu->slug === 'csr') {
             return (new CsrController)->index();
+        }
+
+        if ($menu->slug === 'businesses') {
+            return (new ConcernController)->index();
         }
 
         if ($menu->slug === 'news-and-announcements') {
             return (new NewsController)->index();
+        }
+
+        if ($menu->slug === 'video-gallery') {
+            return (new VideoGalleryController)->index();
         }
 
         if ($menu->slug === 'board-of-directors') {
@@ -196,16 +204,12 @@ class MenuController extends Controller
             return (new AnnualReportsController)->index();
         }
 
-        if ($menu->slug === 'corporate-governance') {
-            return (new CorporateGovernanceController)->index();
-        }
-
         if ($menu->slug === 'products') {
             return (new ProductController)->index();
         }
 
-        if ($menu->slug === 'product-complaint') {
-            return (new ProductComplaintController)->index();
+        if ($menu->slug === 'connect') {
+            return (new ConnectController)->index();
         }
 
         if (view()->exists("admin.{$slug}.index")) {

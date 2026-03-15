@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Menu;
+use App\Models\Footer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
@@ -42,5 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('menus', $menus);
         });
+
+        View::share('footer', Footer::find(1) ?? new Footer());
     }
 }

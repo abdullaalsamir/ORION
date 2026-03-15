@@ -75,8 +75,8 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.directors.store') }}" method="POST" enctype="multipart/form-data"
-                class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6">
+            <form id="addDirectorForm" action="{{ route('admin.directors.store') }}" method="POST"
+                enctype="multipart/form-data" class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6">
                 @csrf
                 <div class="grid grid-cols-15 gap-10">
                     <div class="col-span-4 flex flex-col items-center">
@@ -116,7 +116,7 @@
             </form>
 
             <div class="flex justify-end items-center border-t border-slate-100 pt-4 shrink-0 bg-white">
-                <button type="submit" class="btn-success h-10">
+                <button type="submit" form="addDirectorForm" class="btn-success h-10">
                     Save Director
                 </button>
             </div>

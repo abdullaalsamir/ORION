@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductComplaint extends Model
+class Connect extends Model
 {
     protected $guarded = [];
+
     protected $casts = [
-        'complaint_date' => 'date',
-        'mfg_date' => 'date',
-        'exp_date' => 'date',
+        'date' => 'date',
     ];
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NewsItem;
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 use Str;
@@ -19,7 +20,7 @@ class NewsController extends Controller
         $groupedNews = NewsItem::orderBy('news_date', 'desc')
             ->orderBy('order', 'desc')
             ->get()
-            ->groupBy(fn($item) => \Carbon\Carbon::parse($item->news_date)->format('Y-m-d'));
+            ->groupBy(fn($item) => Carbon::parse($item->news_date)->format('Y-m-d'));
 
         return view('admin.news-and-announcements.index', compact('menu', 'groupedNews'));
     }

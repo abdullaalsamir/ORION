@@ -1,5 +1,5 @@
 @if(isset($newsMenu) && ($pinnedNews || $homeNews->isNotEmpty()))
-    <section class="mt-16">
+    <section id="home-news-section" class="pb-16">
 
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-left text-orion-blue text-2xl uppercase font-bold">
@@ -42,7 +42,7 @@
                                     {{ $pinnedNews->title }}
                                 </h3>
                                 <p class="text-slate-500 text-base leading-relaxed line-clamp-3">
-                                    {{ $pinnedNews->description }}
+                                    {{ strip_tags( $pinnedNews->description ) }}
                                 </p>
                                     
                                 <div class="mt-4">
@@ -90,7 +90,7 @@
                                         {{ $item->title }}
                                     </h4>
                                     <p class="text-slate-500 text-base leading-relaxed line-clamp-1 mt-2">
-                                        {{ html_entity_decode(strip_tags($item->description)) }}
+                                        {{ strip_tags($item->description) }}
                                     </p>
                                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mt-2">
                                         {{ $item->news_date->format('d F, Y') }}
@@ -112,7 +112,7 @@
                                         {{ $item->title }}
                                     </h4>
                                     <p class="text-slate-500 text-base leading-relaxed line-clamp-1 mt-2">
-                                        {{ html_entity_decode(strip_tags($item->description)) }}
+                                        {{ strip_tags($item->description) }}
                                     </p>
                                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mt-2">
                                         {{ $item->news_date->format('d F, Y') }}
@@ -139,5 +139,6 @@
                 </div>
             </div>
         </div>
+        
     </section>
 @endif

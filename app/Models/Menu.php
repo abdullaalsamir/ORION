@@ -117,6 +117,11 @@ class Menu extends Model
         return $flatten($all)->where('is_multifunctional', 1);
     }
 
+    public function concern()
+    {
+        return $this->hasOne(Concern::class, 'menu_id');
+    }
+
     public function banners()
     {
         return $this->hasMany(Banner::class);

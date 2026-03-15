@@ -16,9 +16,8 @@ use App\Models\AnnualReports;
 use App\Models\QuarterlyReports;
 use App\Models\HalfYearlyReports;
 use App\Models\PriceSensitiveInformation;
-use App\Models\CorporateGovernance;
 use App\Models\NewsItem;
-use App\Models\ProductComplaint;
+use App\Models\Connect;
 use App\Models\Career;
 use Carbon\Carbon;
 
@@ -153,12 +152,6 @@ class DashboardController extends Controller
                 'subs' => [['label' => 'Information Years', 'value' => $psi['years']]]
             ],
             [
-                'title' => 'Corporate Governance',
-                'icon' => 'fa-landmark',
-                ...($cg = $reportStat(CorporateGovernance::class, 'publication_date')),
-                'subs' => [['label' => 'Governance Years', 'value' => $cg['years']]]
-            ],
-            [
                 'title' => 'News & Announces',
                 'icon' => 'fa-newspaper',
                 ...$baseStat($allNews),
@@ -170,7 +163,7 @@ class DashboardController extends Controller
             [
                 'title' => 'Product Complaints',
                 'icon' => 'fa-exclamation-triangle',
-                'total' => ProductComplaint::count(),
+                'total' => Connect::count(),
                 'no_status' => true,
             ],
             [

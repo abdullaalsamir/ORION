@@ -3,32 +3,45 @@
 
 @section('content')
     <div>
-        <span class="text-xl text-justify font-bold text-orion-blue leading-relaxed">
-            Build a Legacy of Excellence. Shape the Future of Health.
-        </span>
-
-        <p class="text-slate-500 text-base text-justify pt-2">
-            At Orion Pharma Ltd., we believe that medicine is only as powerful as the minds behind it. For over four
-            decades,
-            our journey has been defined by a single, unwavering ethos: In Search of Excellence. But excellence isn’t just a
-            standard we maintain in our advanced facilities; it is the heartbeat of our people and the dedication they bring
-            to
-            work every morning. It lives in the passion of our 2,100+ innovators, pharmacists, and specialists.
+        <p class="text-slate-500 text-base text-justify">
+            At ORION, we recognize that our people are our greatest competitive advantage. As a leading industrial
+            conglomerate, we are firmly committed to maintaining a workplace defined by Equal Employment Opportunity with
+            Diversity, Equity, Inclusion, and Belongingness where every individual is empowered to contribute, grow, and
+            feel included and connected. Our merit-driven culture ensures that opportunities are accessible, reinforcing
+            fairness, transparency, and respect across every level of the organization.
         </p>
 
         <p class="text-slate-500 text-base text-justify pt-4">
-            When you join Orion, you aren’t just starting a job; you are joining a mission to deliver hope across Bangladesh
-            and
-            the world. We provide the platform, the global-standard technology, and the culture of care. You bring
-            brilliance.
-            Let’s redefine healthcare, together.
+            We proudly embrace the diversity of our workforce which drives stronger ideas, smarter solutions, and more
+            innovative outcomes. Through robust and proactive Affirmative Action initiatives, ORION ensures that individuals
+            from all backgrounds are supported, represented, and encouraged to excel, fairly. As part of our commitment to
+            developing future leaders, ORION has established a strategic management process for High-Potential employees to
+            identify exceptional talent and prepare them for critical leadership roles. From early-stage professionals to
+            veteran, we offer clearly defined pathways for career progression, enabling our people to build meaningful,
+            long-term careers aligned with both personal aspirations and organizational goals.
+        </p>
+
+        <p class="text-slate-500 text-base text-justify pt-4">
+            We believe that growth is continuous. To meet the evolving demands of global industries, ORION places strong
+            emphasis on comprehensive skill development across all business units. Our dynamic reskilling and upskilling
+            programs ensure that employees remain future-ready, technologically adept, and equipped to excel in an
+            ever-changing environment. Our competitive salary and benefits, career growth opportunities, positive work
+            culture, structured learning & development programs, cross-functional collaboration gives every employee an
+            environment of well-being.
+        </p>
+
+        <p class="text-slate-500 text-base text-justify pt-4">
+            Our aspiration as an Employer of Choice—a destination where talent is nurtured, achievements are celebrated, and
+            people feel inspired to perform at their highest potential. At ORION, we are committed to offering an
+            empowering, inclusive, and engaging workplace where every employee can shape their future with confidence and
+            success.
         </p>
     </div>
 
     <div class="mt-8">
 
         @if($jobs->isEmpty())
-            <div class="bg-white rounded-2xl border border-slate-200 p-16 text-center">
+            <div class="rounded-2xl border border-slate-200 p-16 text-center">
                 <div class="text-5xl text-slate-300 mb-4">
                     <i class="fas fa-briefcase"></i>
                 </div>
