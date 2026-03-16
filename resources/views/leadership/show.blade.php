@@ -13,7 +13,7 @@
 
         <div class="float-left mr-8 mb-6 w-full md:w-1/3 lg:w-1/4 max-w-75">
             <div class="aspect-3/4 rounded-xl overflow-hidden shimmer relative border border-slate-200">
-                <img src="{{ url($menu->full_slug . '/' . basename($item->image_path)) }}" alt="{{ $item->name }}"
+                <img src="{{ asset('storage/' . $item->image_path) }}" alt="{{ $item->name }}"
                     class="product-image w-full h-full object-cover">
             </div>
         </div>

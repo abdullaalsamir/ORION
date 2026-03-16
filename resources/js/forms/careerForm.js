@@ -23,17 +23,7 @@ window.submitApplication = async function (e, url) {
     }
 
     try {
-
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-
-        if (!res.ok) throw new Error('Upload failed')
+        await window.axios.post(url, formData)
 
         window.closeApplyModal()
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -41,12 +31,8 @@ window.submitApplication = async function (e, url) {
         form.reset()
 
     } catch (err) {
-
-        console.error(err)
-        alert('Upload failed.')
-
+        console.error('Upload process stopped due to error.')
     } finally {
-
         btn.disabled = false
         btn.innerText = 'Upload'
     }

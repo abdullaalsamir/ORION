@@ -33,12 +33,10 @@
                                                 <div class="swiper-slide w-full h-full relative group">
                                                     
                                                     <div class="w-full h-full shimmer bg-slate-100">
-                                                        <img src="{{ url($menu->full_slug . '/' . basename($concern->cover_photo_path)) }}"
-                                                            class="w-full h-full object-cover" alt="{{ $menu->name }}"
-                                                            onload="this.parentElement.classList.remove('shimmer')">
+                                                        <img src="{{ asset('storage/' . $concern->cover_photo_path) }}" class="w-full h-full object-cover" alt="{{ $menu->name }}" onload="this.parentElement.classList.remove('shimmer')">
                                                     </div>
 
-                                                    <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent flex items-end pointer-events-none">
+                                                    <div class="absolute inset-0 flex items-end pointer-events-none bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.6)_8%,rgba(0,0,0,0.4)_12%,rgba(0,0,0,0.2)_18%,transparent_30%)]">
                                                         <div class="p-6 w-full flex justify-between items-end pointer-events-auto z-10">
                                                             
                                                             <a href="{{ $href }}" target="{{ $target }}" class="inline-block hover:text-amber-300 transition-colors duration-300">
@@ -83,9 +81,7 @@
                                         <div class="absolute inset-0 flex">
                                             @foreach($group as $index => $concern)
                                                 <div class="flex-1 h-full relative border-r border-white/20 last:border-r-0">
-                                                    <img src="{{ url($concern->menu->full_slug . '/' . basename($concern->cover_photo_path)) }}"
-                                                        class="w-full h-full object-cover" alt="strip"
-                                                        @if($index === 0) onload="this.closest('.shimmer')?.classList.remove('shimmer')" @endif>
+                                                    <img src="{{ asset('storage/' . $concern->cover_photo_path) }}" class="w-full h-full object-cover" alt="strip" @if($index === 0) onload="this.closest('.shimmer')?.classList.remove('shimmer')" @endif>
                                                 </div>
                                             @endforeach
                                         </div>

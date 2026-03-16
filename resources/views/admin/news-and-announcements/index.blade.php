@@ -30,7 +30,7 @@
                                 <div
                                     class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 flex items-center justify-center">
                                     @if($item->file_type === 'image')
-                                        <img src="{{ url($menu->full_slug . '/' . basename($item->file_path)) }}"
+                                        <img src="{{ asset('storage/' . $item->file_path) }}"
                                             class="w-full h-full object-cover transition-all duration-500">
                                     @else
                                         <div class="flex flex-col items-center justify-center text-red-500">
@@ -57,7 +57,7 @@
 
                                 <div class="shrink-0 px-4 flex items-center gap-3">
                                     @if($item->file_type === 'pdf')
-                                        <a href="{{ url($menu->full_slug . '/' . basename($item->file_path)) }}" target="_blank"
+                                        <a href="{{ asset('storage/' . $item->file_path) }}" target="_blank"
                                             class="badge badge-info hover:bg-sky-100 transition-colors">
                                             <i class="fas fa-eye opacity-70"></i>
                                         </a>

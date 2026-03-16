@@ -78,7 +78,7 @@
                     <div class="space-y-1 bg-slate-100">
                         @foreach($job->converted_images as $img)
                             <div class="overflow-hidden shimmer">
-                                <img src="{{ url('career/' . basename($img)) }}" width="{{ $job->image_width }}"
+                                <img src="{{ asset('storage/' . $img) }}" width="{{ $job->image_width }}"
                                     height="{{ $job->image_height }}" class="w-full h-auto object-contain"
                                     onload="this.parentElement.classList.remove('shimmer')">
                             </div>
@@ -86,7 +86,7 @@
                     </div>
                 @elseif($job->file_path && !str_ends_with($job->file_path, '.pdf'))
                     <div class="overflow-hidden shimmer">
-                        <img src="{{ url('career/' . basename($job->file_path)) }}" width="{{ $job->image_width }}"
+                        <img src="{{ asset('storage/' . $job->file_path) }}" width="{{ $job->image_width }}"
                             height="{{ $job->image_height }}" class="w-full h-auto object-contain"
                             onload="this.parentElement.classList.remove('shimmer')">
                     </div>

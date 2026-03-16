@@ -40,7 +40,7 @@
         @if($concern->cover_photo_path)
             <div
                 class="relative group w-full aspect-10/4 rounded-2xl overflow-hidden border border-slate-200 shimmer bg-slate-100">
-                <img src="{{ url($menu->full_slug . '/' . basename($concern->cover_photo_path)) }}?v={{ time() }}"
+                <img src="{{ asset('storage/' . $concern->cover_photo_path) }}?v={{ time() }}"
                     class="w-full h-full object-cover" onload="this.parentElement.classList.remove('shimmer')">
                 <div class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-all backdrop-blur-sm"
                     onclick="document.getElementById('coverUploadInput').click()">
@@ -88,8 +88,8 @@
                             class="drag-handle absolute top-3 left-3 z-10 w-8 h-8 bg-white/90 backdrop-blur rounded text-slate-400 cursor-grab flex items-center justify-center hover:text-admin-blue shadow-sm">
                             <i class="fas fa-arrows-up-down-left-right"></i>
                         </div>
-                        <img src="{{ url($menu->full_slug . '/' . basename($g->file_path)) }}?v={{ time() }}"
-                            class="w-full h-full object-cover" onload="this.parentElement.classList.remove('shimmer')">
+                        <img src="{{ asset('storage/' . $g->file_path) }}?v={{ time() }}" class="w-full h-full object-cover"
+                            onload="this.parentElement.classList.remove('shimmer')">
                         <div class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-all backdrop-blur-sm"
                             onclick="triggerGalleryReplace({{ $g->id }})">
                             <span class="text-white font-bold tracking-widest uppercase text-[10px]"><i

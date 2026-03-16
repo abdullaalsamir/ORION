@@ -32,9 +32,8 @@ class LeadershipController extends Controller
             $fileName = $slug . '.webp';
             $path = "leadership/{$fileName}";
 
-            if (!Storage::disk('public')->exists('leadership')) {
+            if (!Storage::disk('public')->exists('leadership'))
                 Storage::disk('public')->makeDirectory('leadership');
-            }
 
             $this->processLeadershipImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
 
@@ -66,22 +65,14 @@ class LeadershipController extends Controller
 
         try {
             $slug = $leadership->slug;
-            if ($request->name !== $leadership->name) {
+            if ($request->name !== $leadership->name)
                 $slug = $this->generateUniqueSlug($request->name, $leadership->id);
-            }
 
-            $data = [
-                'name' => $request->name,
-                'slug' => $slug,
-                'designation' => $request->designation,
-                'description' => $request->description,
-                'is_active' => $request->is_active
-            ];
+            $data = ['name' => $request->name, 'slug' => $slug, 'designation' => $request->designation, 'description' => $request->description, 'is_active' => $request->is_active];
 
             if ($request->hasFile('image')) {
-                if (Storage::disk('public')->exists($leadership->image_path)) {
+                if (Storage::disk('public')->exists($leadership->image_path))
                     Storage::disk('public')->delete($leadership->image_path);
-                }
                 $path = "leadership/{$slug}.webp";
                 $this->processLeadershipImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
                 $data['image_path'] = $path;
@@ -99,38 +90,26 @@ class LeadershipController extends Controller
         $baseSlug = \Illuminate\Support\Str::slug($name);
         $slug = $baseSlug;
         $counter = 2;
-
-        while (
-            Leadership::where('slug', $slug)
-                ->when($ignoreId, function ($query) use ($ignoreId) {
-                    return $query->where('id', '!=', $ignoreId);
-                })
-                ->exists()
-        ) {
+        while (Leadership::where('slug', $slug)->when($ignoreId, fn($query) => $query->where('id', '!=', $ignoreId))->exists()) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
         }
-
         return $slug;
     }
 
     private function processLeadershipImage($sourcePath, $destinationPath)
     {
         ini_set('memory_limit', '1024M');
-
-        if (!extension_loaded('gd')) {
+        if (!extension_loaded('gd'))
             throw new Exception('GD library is not installed or enabled.');
-        }
 
         $info = getimagesize($sourcePath);
-        if (!$info) {
+        if (!$info)
             throw new Exception('Invalid image file.');
-        }
 
         $width = $info[0];
         $height = $info[1];
         $type = $info[2];
-
         switch ($type) {
             case IMAGETYPE_JPEG:
                 $src = imagecreatefromjpeg($sourcePath);
@@ -145,17 +124,12 @@ class LeadershipController extends Controller
                 throw new Exception('Unsupported image type.');
         }
 
-        if (!$src) {
-            throw new Exception('Failed to load image resource.');
-        }
-
         imagepalettetotruecolor($src);
         imagealphablending($src, true);
         imagesavealpha($src, true);
 
         $targetRatio = 3 / 4;
         $currentRatio = $width / $height;
-
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -169,52 +143,37 @@ class LeadershipController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 1000) {
+        if ($finalWidth > 1000)
             $finalWidth = 1000;
-        }
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
-
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
-
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
-
-        if (!imagewebp($dst, $destinationPath, 70)) {
+        if (!imagewebp($dst, $destinationPath, 70))
             throw new Exception('Failed to save WebP image.');
-        }
-
         imagedestroy($src);
         imagedestroy($dst);
     }
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->orders as $item) {
+        foreach ($request->orders as $item)
             Leadership::where('id', $item['id'])->update(['order' => $item['order']]);
-        }
         return response()->json(['success' => true]);
     }
 
     public function delete(Leadership $leadership)
     {
         try {
-            if (Storage::disk('public')->exists($leadership->image_path)) {
+            if (Storage::disk('public')->exists($leadership->image_path))
                 Storage::disk('public')->delete($leadership->image_path);
-            }
             $leadership->delete();
             return response()->json(['success' => true]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-    }
-
-    public function serveImage($filename)
-    {
-        $storagePath = storage_path('app/public/leadership/' . $filename);
-        abort_if(!file_exists($storagePath), 404);
-        return response()->file($storagePath);
     }
 
     public function frontendIndex($menu)

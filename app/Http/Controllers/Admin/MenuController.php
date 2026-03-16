@@ -184,30 +184,6 @@ class MenuController extends Controller
             return (new BoardDirectorController)->index();
         }
 
-        if ($menu->slug === 'medical-journals') {
-            return (new MedicalJournalController)->index();
-        }
-
-        if ($menu->slug === 'price-sensitive-information') {
-            return (new PriceSensitiveInformationController)->index();
-        }
-
-        if ($menu->slug === 'half-yearly-reports') {
-            return (new HalfYearlyReportsController)->index();
-        }
-
-        if ($menu->slug === 'quarterly-reports') {
-            return (new QuarterlyReportsController)->index();
-        }
-
-        if ($menu->slug === 'annual-reports') {
-            return (new AnnualReportsController)->index();
-        }
-
-        if ($menu->slug === 'products') {
-            return (new ProductController)->index();
-        }
-
         if ($menu->slug === 'connect') {
             return (new ConnectController)->index();
         }

@@ -18,12 +18,11 @@
 
                     <div class="w-full aspect-video bg-black relative overflow-hidden">
 
-                        <!-- shimmer -->
                         <div class="absolute inset-0 shimmer video-shimmer"></div>
 
                         <video class="plyr-video w-full h-full object-cover opacity-0" playsinline preload="none"
-                            poster="{{ url('video-gallery-files/thumbnails/' . basename($video->thumbnail_path)) }}">
-                            <source src="{{ url('video-gallery-files/videos/' . basename($video->video_path)) }}"
+                            poster="{{ asset('storage/' . $video->thumbnail_path) }}">
+                            <source src="{{ asset('storage/' . $video->video_path) }}"
                                 type="video/{{ pathinfo($video->video_path, PATHINFO_EXTENSION) }}" />
                         </video>
 

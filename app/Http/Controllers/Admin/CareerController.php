@@ -44,13 +44,11 @@ class CareerController extends Controller
 
     public function delete(Career $career)
     {
-        if ($career->file_path) {
+        if ($career->file_path)
             Storage::disk('public')->delete($career->file_path);
-        }
         if ($career->converted_images) {
-            foreach ($career->converted_images as $img) {
+            foreach ($career->converted_images as $img)
                 Storage::disk('public')->delete($img);
-            }
         }
         $career->delete();
 
@@ -59,9 +57,8 @@ class CareerController extends Controller
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->items as $item) {
+        foreach ($request->items as $item)
             Career::where('id', $item['id'])->update(['order' => $item['order']]);
-        }
         return response()->json(['success' => true]);
     }
 
@@ -94,9 +91,8 @@ class CareerController extends Controller
                 $filename = $slugTitle . '.webp';
                 $destPath = storage_path('app/public/career/image/' . $filename);
 
-                if (!file_exists(dirname($destPath))) {
+                if (!file_exists(dirname($destPath)))
                     mkdir(dirname($destPath), 0755, true);
-                }
                 $this->processCareerImage($file->getPathname(), $destPath, $career);
 
                 $career->file_path = 'career/image/' . $filename;
@@ -109,17 +105,11 @@ class CareerController extends Controller
             $totalPages = count($request->pdf_images);
 
             foreach ($request->pdf_images as $index => $base64Data) {
-                if ($totalPages === 1) {
-                    $filename = $slugTitle . '.webp';
-                } else {
-                    $filename = $slugTitle . '-' . ($index + 1) . '.webp';
-                }
-
+                $filename = $totalPages === 1 ? $slugTitle . '.webp' : $slugTitle . '-' . ($index + 1) . '.webp';
                 $destPath = storage_path('app/public/career/image/' . $filename);
 
-                if (!file_exists(dirname($destPath))) {
+                if (!file_exists(dirname($destPath)))
                     mkdir(dirname($destPath), 0755, true);
-                }
 
                 $imageParts = explode(";base64,", $base64Data);
                 $imageDecoded = base64_decode($imageParts[1]);
@@ -141,7 +131,6 @@ class CareerController extends Controller
     private function processCareerImage($sourcePath, $destinationPath, Career $career)
     {
         ini_set('memory_limit', '1024M');
-
         $info = getimagesize($sourcePath);
         $width = $info[0];
         $height = $info[1];
@@ -171,7 +160,6 @@ class CareerController extends Controller
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
-
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $finalWidth, $finalHeight, $width, $height);
         imagewebp($dst, $destinationPath, 70);
 
@@ -184,58 +172,28 @@ class CareerController extends Controller
 
     public function careerIndex()
     {
-        $jobs = Career::where('is_active', 1)
-            ->orderBy('order')
-            ->get();
-
-        $menu = (object) [
-            'name' => 'Career',
-            'content' => null
-        ];
-
+        $jobs = Career::where('is_active', 1)->orderBy('order')->get();
+        $menu = (object) ['name' => 'Career', 'content' => null];
         return view('career.index', compact('jobs', 'menu'));
     }
 
     public function careerShow($slug)
     {
-        $job = Career::where('slug', $slug)
-            ->where('is_active', 1)
-            ->firstOrFail();
-
-        $menu = (object) [
-            'name' => 'Career',
-            'content' => null
-        ];
-
+        $job = Career::where('slug', $slug)->where('is_active', 1)->firstOrFail();
+        $menu = (object) ['name' => 'Career', 'content' => null];
         return view('career.show', compact('job', 'menu'));
     }
 
     public function submitApplication(Request $request, $slug)
     {
         $job = Career::where('slug', $slug)->firstOrFail();
-
-        $request->validate([
-            'cv' => 'required|mimes:pdf|max:102400',
-        ]);
-
+        $request->validate(['cv' => 'required|mimes:pdf|max:102400']);
         $file = $request->file('cv');
 
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $filename = time() . '_' . Str::slug($originalName) . '.pdf';
-
         $file->storeAs('career/uploadedCVs/' . $job->slug, $filename, 'public');
 
         return response()->json(['success' => true]);
-    }
-
-    public function serveCareerImage($filename)
-    {
-        $path = storage_path('app/public/career/image/' . $filename);
-
-        if (!file_exists($path)) {
-            abort(404);
-        }
-
-        return response()->file($path, ['Content-Type' => 'image/webp']);
     }
 }

@@ -3,7 +3,6 @@
         <h1>{{ $menu->name }}</h1>
         <p class="text-xs text-slate-400">Manage banners for this page</p>
     </div>
-
     <button onclick="openBannerUploadModal()" class="btn-success h-10!">
         <i class="fas fa-plus"></i> Add Image
     </button>
@@ -35,7 +34,7 @@
             <div
                 class="relative group rounded-2xl border border-slate-200 bg-white p-1 hover:border-admin-blue transition-all">
                 <div class="rounded-xl overflow-hidden bg-slate-100 relative shimmer">
-                    <img src="{{ url($menu->full_slug . '/' . $banner->file_name) }}?v={{ time() }}"
+                    <img src="{{ asset('storage/' . $banner->file_path) }}?v={{ time() }}"
                         width="{{ is_numeric($actualWidth) ? $actualWidth : '' }}"
                         height="{{ is_numeric($actualHeight) ? $actualHeight : '' }}"
                         class="w-full h-full object-cover transition-all duration-500 {{ !$banner->is_active ? 'opacity-40 grayscale' : '' }}"

@@ -6,20 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Banner;
 use App\Models\Slider;
-use App\Models\Generic;
-use App\Models\Product;
 use App\Models\CsrItem;
-use App\Models\Scholarship;
-use App\Models\MedicalJournal;
 use App\Models\BoardDirector;
-use App\Models\AnnualReports;
-use App\Models\QuarterlyReports;
-use App\Models\HalfYearlyReports;
-use App\Models\PriceSensitiveInformation;
 use App\Models\NewsItem;
 use App\Models\Connect;
 use App\Models\Career;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -51,19 +42,6 @@ class DashboardController extends Controller
                 'inactive' => $data->where('is_active', 0)->count(),
             ];
         };
-
-        $reportStat = function ($class, $dateCol) use ($baseStat) {
-            $data = $class::get([$dateCol, 'is_active']);
-            $stat = $baseStat($data);
-            $stat['years'] = $data->pluck($dateCol)->map(function ($d) {
-                return Carbon::parse($d)->format('Y');
-            })->unique()->count();
-            return $stat;
-        };
-
-        $mjData = MedicalJournal::get(['year', 'is_active']);
-        $mjStat = $baseStat($mjData);
-        $mjStat['years'] = $mjData->pluck('year')->unique()->count();
 
         $cards = [
             [
@@ -97,59 +75,14 @@ class DashboardController extends Controller
                 ...$baseStat(Slider::get(['is_active'])),
             ],
             [
-                'title' => 'Generics',
-                'icon' => 'fa-vials',
-                ...$baseStat(Generic::get(['is_active'])),
-            ],
-            [
-                'title' => 'Products',
-                'icon' => 'fa-pills',
-                ...$baseStat(Product::get(['is_active'])),
-            ],
-            [
                 'title' => 'CSR List',
                 'icon' => 'fa-hand-holding-heart',
                 ...$baseStat(CsrItem::get(['is_active'])),
             ],
             [
-                'title' => 'Scholarships',
-                'icon' => 'fa-user-graduate',
-                ...$baseStat(Scholarship::get(['is_active'])),
-            ],
-            [
-                'title' => 'Medical Journals',
-                'icon' => 'fa-book-medical',
-                ...$mjStat,
-                'subs' => [['label' => 'Journal Years', 'value' => $mjStat['years']]]
-            ],
-            [
                 'title' => 'Board Directors',
                 'icon' => 'fa-user-tie',
                 ...$baseStat(BoardDirector::get(['is_active'])),
-            ],
-            [
-                'title' => 'Annual Reports',
-                'icon' => 'fa-file-invoice-dollar',
-                ...($ar = $reportStat(AnnualReports::class, 'publication_date')),
-                'subs' => [['label' => 'Annual Years', 'value' => $ar['years']]]
-            ],
-            [
-                'title' => 'Quarterly Reports',
-                'icon' => 'fa-chart-pie',
-                ...($qr = $reportStat(QuarterlyReports::class, 'publication_date')),
-                'subs' => [['label' => 'Quarterly Years', 'value' => $qr['years']]]
-            ],
-            [
-                'title' => 'Half Yearly Reports',
-                'icon' => 'fa-chart-bar',
-                ...($hyr = $reportStat(HalfYearlyReports::class, 'publication_date')),
-                'subs' => [['label' => 'Half Yearly Years', 'value' => $hyr['years']]]
-            ],
-            [
-                'title' => 'Price Sensitive Info',
-                'icon' => 'fa-info-circle',
-                ...($psi = $reportStat(PriceSensitiveInformation::class, 'publication_date')),
-                'subs' => [['label' => 'Information Years', 'value' => $psi['years']]]
             ],
             [
                 'title' => 'News & Announces',

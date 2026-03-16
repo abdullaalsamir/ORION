@@ -3,7 +3,7 @@
 @section('title', $item->title)
 @section('meta_title', $item->title)
 @section('meta_description', Str::limit(strip_tags($item->description), 150))
-@section('meta_image', url($menu->full_slug . '/' . basename($item->file_path)))
+@section('meta_image', asset('storage/' . $item->file_path))
 
 @section('content')
     <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
@@ -19,7 +19,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <article class="lg:col-span-8">
             <div class="rounded-2xl overflow-hidden mb-8 aspect-video shimmer relative border border-slate-200">
-                <img src="{{ url($menu->full_slug . '/' . basename($item->file_path)) }}" alt="{{ $item->title }}"
+                <img src="{{ asset('storage/' . $item->file_path) }}" alt="{{ $item->title }}"
                     class="product-image w-full h-full object-cover">
             </div>
 
@@ -91,9 +91,7 @@
                     @foreach($related as $rel)
                         @php
                             $isPdf = $rel->file_type === 'pdf';
-                            $link = $isPdf
-                                ? url($menu->full_slug . '/' . basename($rel->file_path))
-                                : url($menu->full_slug . '/' . $rel->slug);
+                            $link = $isPdf ? asset('storage/' . $rel->file_path) : url($menu->full_slug . '/' . $rel->slug);
                         @endphp
 
                         <a href="{{ $link }}" @if($isPdf) target="_blank" rel="noopener noreferrer" @endif
@@ -101,7 +99,7 @@
 
                             @if(!$isPdf)
                                 <div class="w-20 h-14 rounded-md overflow-hidden shrink-0 shimmer relative border border-slate-200">
-                                    <img src="{{ url($menu->full_slug . '/' . basename($rel->file_path)) }}"
+                                    <img src="{{ asset('storage/' . $rel->file_path) }}"
                                         class="product-image w-full h-full object-cover transition-transform duration-500">
                                 </div>
                             @else

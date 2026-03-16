@@ -28,7 +28,7 @@
 
                                 <div
                                     class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2">
-                                    <img src="{{ url($menu->full_slug . '/' . basename($item->image_path)) }}"
+                                    <img src="{{ asset('storage/' . $item->image_path) }}"
                                         class="w-full h-full object-cover transition-all duration-500">
                                 </div>
 

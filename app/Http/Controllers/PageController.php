@@ -5,66 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Menu;
 use App\Models\Slider;
 use App\Models\CsrItem;
-use App\Models\Product;
 use App\Models\NewsItem;
 use App\Models\Concern;
-use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CsrController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\ConcernController;
 use App\Http\Controllers\Admin\VideoGalleryController;
-use App\Http\Controllers\Admin\ScholarshipController;
-use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BoardDirectorController;
 use App\Http\Controllers\Admin\LeadershipController;
-use App\Http\Controllers\Admin\MedicalJournalController;
-use App\Http\Controllers\Admin\PriceSensitiveInformationController;
-use App\Http\Controllers\Admin\HalfYearlyReportsController;
-use App\Http\Controllers\Admin\QuarterlyReportsController;
-use App\Http\Controllers\Admin\AnnualReportsController;
 use App\Http\Controllers\Admin\ConnectController;
 
 class PageController extends Controller
 {
     public function home()
     {
-        $menu = Menu::where('slug', 'home')
-            ->first();
-
-        $sliders = Slider::where('is_active', 1)
-            ->orderBy('order')->get();
-
-        $csrItems = CsrItem::where('is_active', 1)
-            ->latest('csr_date')
-            ->take(6)
-            ->get();
-
-        $csrMenu = Menu::where('slug', 'csr')
-            ->first();
-
-        $homeProducts = Product::where('is_active', 1)
-            ->whereHas('generic', fn($q) => $q
-                ->where('is_active', 1))
-            ->with('generic')
-            ->latest()
-            ->take(6)
-            ->get();
-
-        $productsMenu = Menu::where('slug', 'products')
-            ->first();
-
-        $newsMenu = Menu::where('slug', 'news-and-announcements')
-            ->first();
+        $menu = Menu::where('slug', 'home')->first();
+        $sliders = Slider::where('is_active', 1)->orderBy('order')->get();
+        $csrItems = CsrItem::where('is_active', 1)->latest('csr_date')->take(6)->get();
+        $csrMenu = Menu::where('slug', 'csr')->first();
+        $newsMenu = Menu::where('slug', 'news-and-announcements')->first();
 
         $pinnedNews = NewsItem::where('is_active', 1)
-            ->where('is_pin', 1)
-            ->latest('news_date')
-            ->first();
+            ->where('is_pin', 1)->latest('news_date')->first();
 
         $homeNews = NewsItem::where('is_active', 1)
-            ->latest('news_date')
-            ->take(10)
-            ->get();
+            ->latest('news_date')->take(10)->get();
 
         $homeConcerns = Concern::whereNotNull('cover_photo_path')
             ->whereHas('menu', function ($q) {
@@ -75,16 +40,13 @@ class PageController extends Controller
             ->sortBy(function ($concern) {
                 $menu = $concern->menu;
                 $orderPath = [];
-
                 $current = $menu;
                 while ($current) {
                     array_unshift($orderPath, sprintf('%04d', $current->order));
                     $current = $current->parent;
                 }
-
                 return implode('-', $orderPath);
-            })
-            ->values();
+            })->values();
 
         return view('layouts.app', compact(
             'menu',
@@ -92,8 +54,6 @@ class PageController extends Controller
             'csrItems',
             'homeConcerns',
             'csrMenu',
-            'homeProducts',
-            'productsMenu',
             'pinnedNews',
             'homeNews',
             'newsMenu'
@@ -110,57 +70,27 @@ class PageController extends Controller
         if ($menu) {
             abort_if(!$menu->isEffectivelyActive(), 404);
 
-            if ($menu->is_multifunctional && $menu->slug === 'csr') {
+            if ($menu->is_multifunctional && $menu->slug === 'csr')
                 return (new CsrController)->frontendIndex($menu);
-            }
-            if ($menu->is_multifunctional && $menu->slug === 'news-and-announcements') {
+            if ($menu->is_multifunctional && $menu->slug === 'news-and-announcements')
                 return (new NewsController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'board-of-directors') {
+            if ($menu->slug === 'board-of-directors')
                 return (new BoardDirectorController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'leadership') {
+            if ($menu->slug === 'leadership')
                 return (new LeadershipController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'scholarship') {
-                return (new ScholarshipController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'products') {
-                return (new ProductController)->frontendIndex($menu);
-            }
-            if ($menu->is_multifunctional && $menu->slug === 'video-gallery') {
+            if ($menu->is_multifunctional && $menu->slug === 'video-gallery')
                 return (new VideoGalleryController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'medical-journals') {
-                return (new MedicalJournalController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'price-sensitive-information') {
-                return (new PriceSensitiveInformationController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'half-yearly-reports') {
-                return (new HalfYearlyReportsController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'quarterly-reports') {
-                return (new QuarterlyReportsController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'annual-reports') {
-                return (new AnnualReportsController)->frontendIndex($menu);
-            }
-            if ($menu->slug === 'connect') {
+            if ($menu->slug === 'connect')
                 return (new ConnectController)->frontendIndex($menu);
-            }
 
             $rootParent = $menu;
             while ($rootParent->parent_id) {
                 $rootParent = $rootParent->parent;
             }
-            if ($rootParent->slug === 'businesses') {
+            if ($rootParent->slug === 'businesses')
                 return (new ConcernController)->frontendShow($menu);
-            }
-
-            if ($menu->slug === 'photo-gallery') {
+            if ($menu->slug === 'photo-gallery')
                 return (new ConcernController)->frontendPhotoGallery($menu);
-            }
 
             abort_if($menu->children()->exists(), 404);
             return view('layouts.app', compact('menu'));
@@ -173,98 +103,17 @@ class PageController extends Controller
         $parentMenu = Menu::all()->first(fn($m) => $m->full_slug === $parentPath);
 
         if ($parentMenu && $parentMenu->is_multifunctional) {
-
-            if ($parentMenu->slug === 'price-sensitive-information' && str_ends_with($itemSlug, '.pdf')) {
-                return (new PriceSensitiveInformationController)->servePdf($parentPath, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'half-yearly-reports' && str_ends_with($itemSlug, '.pdf')) {
-                return (new HalfYearlyReportsController)->servePdf($parentPath, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'quarterly-reports' && str_ends_with($itemSlug, '.pdf')) {
-                return (new QuarterlyReportsController)->servePdf($parentPath, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'annual-reports' && str_ends_with($itemSlug, '.pdf')) {
-                return (new AnnualReportsController)->servePdf($parentPath, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'csr') {
+            if ($parentMenu->slug === 'csr')
                 return (new CsrController)->frontendShow($parentMenu, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'news-and-announcements') {
-                if (str_ends_with($itemSlug, '.pdf')) {
-                    return (new NewsController)->serveNewsPdf($parentPath, $itemSlug);
-                }
+            if ($parentMenu->slug === 'news-and-announcements')
                 return (new NewsController)->frontendShow($parentMenu, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'board-of-directors') {
+            if ($parentMenu->slug === 'board-of-directors')
                 return (new BoardDirectorController)->frontendShow($parentMenu, $itemSlug);
-            }
-
-            if ($parentMenu->slug === 'leadership') {
+            if ($parentMenu->slug === 'leadership')
                 return (new LeadershipController)->frontendShow($parentMenu, $itemSlug);
-            }
-        }
-
-        if (!$parentMenu) {
-            $baseMenu = Menu::where('slug', 'products')->first();
-            if ($baseMenu && count($segments) > 0 && $segments[0] === $baseMenu->slug) {
-                $genericSlug = $segments[1] ?? null;
-                if ($genericSlug) {
-                    return (new ProductController)->frontendShow($genericSlug, $itemSlug, $baseMenu);
-                }
-            }
         }
 
         abort(404);
-    }
-
-    public function image($path, $filename)
-    {
-        if (str_starts_with($path, 'products/')) {
-            $genericSlug = str_replace('products/', '', $path);
-            return (new ProductController)->serveProductImage($genericSlug, $filename);
-        }
-
-        $menu = Menu::all()->first(fn($m) => $m->full_slug === $path);
-        if (!$menu)
-            abort(404);
-
-        if ($menu->is_multifunctional) {
-            if ($menu->slug === 'csr') {
-                return (new CsrController)->serveCsrImage($filename);
-            }
-            if ($menu->slug === 'news-and-announcements') {
-                return (new NewsController)->serveNewsImage($filename);
-            }
-            if ($menu->slug === 'board-of-directors') {
-                return (new BoardDirectorController)->serveImage($filename);
-            }
-            if ($menu->slug === 'leadership') {
-                return (new LeadershipController)->serveImage($filename);
-            }
-            if ($menu->slug === 'scholarship') {
-                return (new ScholarshipController)->serveScholarImage($filename);
-            }
-        }
-
-        if ($menu && str_starts_with($menu->full_slug, 'businesses/')) {
-            $coverPath = storage_path("app/public/concerns/{$menu->slug}/cover-photo/{$filename}");
-            if (file_exists($coverPath)) {
-                return response()->file($coverPath);
-            }
-
-            $galleryPath = storage_path("app/public/concerns/{$menu->slug}/photo-gallery/{$filename}");
-            if (file_exists($galleryPath)) {
-                return response()->file($galleryPath);
-            }
-        }
-
-        return (new BannerController)->serveBannerImage($menu, $filename);
     }
 
     public function sitemap()
@@ -277,16 +126,9 @@ class PageController extends Controller
                 $q->where('is_active', 1)->orderBy('order');
             }
         ])
-            ->whereNull('parent_id')
-            ->where('is_active', 1)
-            ->where('slug', '!=', 'home')
-            ->orderBy('order')
-            ->get();
+            ->whereNull('parent_id')->where('is_active', 1)->where('slug', '!=', 'home')->orderBy('order')->get();
 
-        $menu = (object) [
-            'name' => 'Sitemap',
-            'content' => null
-        ];
+        $menu = (object) ['name' => 'Sitemap', 'content' => null];
 
         return view('partials.sitemap', compact('menus', 'menu'));
     }

@@ -79,7 +79,6 @@
 
         <div class="container mx-auto w-[90%] max-w-350">
             @include('partials.home-csr')
-            @include('partials.home-products')
             @include('partials.home-news-and-announcements')
         </div>
     @endif

@@ -18,7 +18,7 @@
                     class="index-card group bg-white rounded-xl overflow-hidden flex flex-col">
 
                     <div class="aspect-video overflow-hidden shimmer relative border-b border-slate-200">
-                        <img src="{{ url($csrMenu->full_slug . '/' . basename($item->image_path)) }}"
+                        <img src="{{ asset('storage/' . $item->image_path) }}"
                             class="product-image w-full h-full object-cover transition-transform duration-300"
                             alt="{{ $item->title }}">
                     </div>

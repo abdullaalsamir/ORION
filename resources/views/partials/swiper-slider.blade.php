@@ -3,11 +3,11 @@
         <div class="swiper-wrapper">
             @foreach($sliders as $slider)
                 <div class="swiper-slide relative aspect-23/9 overflow-hidden">
-                    <img src="{{ asset($slider->image_path) }}" class="w-full h-full object-cover"
+                    <img src="{{ asset('storage/' . $slider->image_path) }}" class="w-full h-full object-cover"
                         alt="{{ $slider->header_1 }}">
 
                     <div
-                        class="absolute inset-0 flex items-center bg-[linear-gradient(to_right,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.5)_25%,rgba(0,0,0,0)_50%)]">
+                        class="absolute inset-0 flex items-center bg-[linear-gradient(to_right,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.65)_6%,rgba(0,0,0,0.55)_14%,rgba(0,0,0,0.42)_22%,rgba(0,0,0,0.30)_30%,rgba(0,0,0,0.20)_40%,rgba(0,0,0,0.11)_48%,rgba(0,0,0,0.05)_55%,rgba(0,0,0,0)_60%)]">
                         <div class="container mx-auto w-[90%] max-w-350">
                             <div class="max-w-3xl space-y-4 slide-content">
                                 <span class="text-5xl text-white text-shadow-lg font-bold leading-tight">

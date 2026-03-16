@@ -65,7 +65,7 @@
                             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                                 <tr>
                                     <td width="140" style="font-size:14px;font-weight:500;color:#666;">Phone:</td>
-                                    <td>{{ $query->phone }}</td>
+                                    <td style="font-size:14px;">{{ $query->phone }}</td>
                                 </tr>
                             </table>
 

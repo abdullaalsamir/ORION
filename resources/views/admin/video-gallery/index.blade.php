@@ -25,7 +25,7 @@
                         </div>
 
                         <div class="w-full aspect-video rounded-xl overflow-hidden bg-slate-100 relative mb-3">
-                            <img src="{{ url('video-gallery-files/thumbnails/' . basename($item->thumbnail_path)) }}?v={{ time() }}"
+                            <img src="{{ asset('storage/' . $item->thumbnail_path) }}?v={{ time() }}"
                                 class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
                                 <i class="fas fa-play-circle text-white text-4xl opacity-80"></i>
@@ -62,7 +62,6 @@
         </div>
     </div>
 
-    <!-- Add Modal -->
     <div id="addModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl w-full">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100">
@@ -78,7 +77,6 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
-                    <!-- Thumbnail -->
                     <div class="flex flex-col items-center">
                         <label class="text-[11px] font-bold text-slate-400 uppercase mb-1 self-start ml-1">Thumbnail
                             (16:9)</label>
@@ -93,7 +91,6 @@
                         </div>
                     </div>
 
-                    <!-- Video File -->
                     <div class="flex flex-col items-center">
                         <label class="text-[11px] font-bold text-slate-400 uppercase mb-1 self-start ml-1">Video File (Any
                             Format)</label>
@@ -116,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl w-full">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100">

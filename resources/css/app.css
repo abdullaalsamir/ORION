@@ -85,51 +85,6 @@ footer h1::after {
     display: none;
 }
 
-.filter-mode-btn {
-    color: #64748b;
-}
-
-.filter-mode-btn.active {
-    background: var(--color-orion-blue);
-    color: white;
-}
-
-.letter-btn {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    font-weight: 700;
-    color: #64748b;
-    transition: 0.2s;
-}
-
-.letter-btn:hover {
-    background: #f1f5f9;
-    color: var(--color-orion-blue);
-}
-
-.letter-btn.active {
-    background: var(--color-orion-blue);
-    color: white;
-}
-
-.alphabet-container::-webkit-scrollbar {
-    height: 4px;
-}
-
-.tab-btn {
-    border-bottom: 2px solid transparent;
-}
-
-.tab-btn.active {
-    color: var(--color-orion-blue) !important;
-    border-bottom: 2px solid var(--color-orion-blue) !important;
-    background-color: white;
-}
-
 @layer utilities {
     .transition-all {
         transition-property: all;
@@ -209,35 +164,7 @@ footer h1::after {
         @apply mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3;
     }
 
-    .flag-box {
-        @apply w-24 h-16 flex items-center justify-center;
-    }
-
-    .flag-fill {
-        @apply w-full h-full object-contain;
-    }
-
-    .country {
-        @apply w-[100px] text-center;
-    }
-
-    .country-name {
-        @apply mt-2 text-sm leading-5 text-center;
-    }
-
-    .quote-mark-open {
-        @apply absolute -top-[35px] -left-[20px]
-            text-[2.5rem] font-serif
-            text-orion-blue opacity-30;
-    }
-
-    .quote-mark-close {
-        @apply absolute -bottom-[25px] -right-[10px]
-            text-[2.5rem] font-serif
-            text-orion-blue opacity-30;
-    }
-
-     .prose ul {
+    .prose ul {
         list-style-type: disc;
         margin-left: 2rem;
         margin-top: 0.5rem;
@@ -259,29 +186,6 @@ footer h1::after {
         padding-left: 0.25rem;
     }
 
-    .product-key b,
-    .product-key strong {
-        @apply font-semibold;
-    }
-
-    .corporate-info-table {
-        @apply w-full table-fixed border-separate border-spacing-0;
-    }
-
-    .corporate-info-table tbody tr:nth-child(even) {
-        @apply bg-slate-50;
-    }
-
-    .corporate-info-td-label {
-        @apply w-[50%] px-6 py-4 border-b border-slate-100 align-top
-               font-semibold text-orion-blue uppercase text-sm tracking-wide break-words;
-    }
-
-    .corporate-info-td-value {
-        @apply px-6 py-4 border-b border-slate-100 align-top
-               text-base text-slate-600 leading-relaxed;
-    }
-
     .hover-translate-x {
         transition: transform 0.3s ease;
     }
@@ -296,43 +200,6 @@ footer h1::after {
 
     .hover-translate-y:hover {
         transform: translateY(-5px);
-    }
-
-    .adverse-event-reporting-section-title {
-        @apply flex items-center gap-3 text-orion-blue font-bold text-lg uppercase mt-8 mb-4;
-    }
-
-    .adverse-event-reporting-section-title:first-of-type {
-        @apply mt-0;
-    }
-
-    .adverse-event-reporting-list {
-        @apply list-none p-0 mb-6;
-    }
-
-    .adverse-event-reporting-list li {
-        @apply relative pl-6 mb-2 text-slate-600;
-    }
-
-    .adverse-event-reporting-list li::before {
-        content: "•";
-        @apply absolute left-0 text-orion-blue font-bold;
-    }
-
-    .pdf-download-card {
-        @apply block bg-rose-50 border border-rose-200 p-8 rounded-2xl text-center transition-colors;
-    }
-
-    .pdf-download-card:hover {
-        @apply bg-rose-100 border-rose-300;
-    }
-
-    .pdf-download-card-content {
-        @apply transition-transform duration-300;
-    }
-
-    .pdf-download-card:hover .pdf-download-card-content {
-        @apply -translate-y-1;
     }
 }
 
@@ -428,24 +295,6 @@ select:focus {
     border-color: var(--color-orion-blue) !important;
     outline: none !important;
     box-shadow: none !important;
-}
-
-@keyframes mapDraw {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-.global-footsteps-map path {
-    stroke-dasharray: 2000;
-    stroke-dashoffset: 2000;
-    animation: mapDraw 5s ease forwards;
-}
-
-@media (max-width: 768px) {
-    .swiper-button-next, .swiper-button-prev {
-        display: none !important;
-    }
 }
 
 .plyr:not(.plyr--playing) .plyr__controls {

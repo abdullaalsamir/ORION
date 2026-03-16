@@ -20,7 +20,6 @@ class BannerController extends Controller
     public function getBanners(Menu $menu)
     {
         $banners = $menu->banners()->orderBy('created_at', 'asc')->get();
-
         return response()->json([
             'html' => view('admin.banners.partials.banner-list', compact('banners', 'menu'))->render()
         ]);
@@ -39,12 +38,10 @@ class BannerController extends Controller
             $fileName = time() . '.webp';
             $relativeDir = "banners/{$menu->slug}";
 
-            if (!Storage::disk('public')->exists($relativeDir)) {
+            if (!Storage::disk('public')->exists($relativeDir))
                 Storage::disk('public')->makeDirectory($relativeDir);
-            }
 
             $fullPath = storage_path("app/public/{$relativeDir}/{$fileName}");
-
             $ratios = [48 / 9, 23 / 9, 16 / 9];
             $targetRatio = $ratios[$request->ratio];
 
@@ -67,10 +64,7 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
     {
-        $request->validate([
-            'is_active' => 'required'
-        ]);
-
+        $request->validate(['is_active' => 'required']);
         try {
             $banner->is_active = $request->is_active;
             $banner->save();
@@ -83,15 +77,12 @@ class BannerController extends Controller
     private function processBanner($sourcePath, $destinationPath, $targetRatio, $maxWidth)
     {
         ini_set('memory_limit', '1024M');
-
-        if (!extension_loaded('gd')) {
+        if (!extension_loaded('gd'))
             throw new Exception('GD library is not installed or enabled.');
-        }
 
         $info = getimagesize($sourcePath);
-        if (!$info) {
+        if (!$info)
             throw new Exception('Invalid image file.');
-        }
 
         $width = $info[0];
         $height = $info[1];
@@ -111,16 +102,14 @@ class BannerController extends Controller
                 throw new Exception('Unsupported image type.');
         }
 
-        if (!$src) {
+        if (!$src)
             throw new Exception('Failed to load image resource.');
-        }
 
         imagepalettetotruecolor($src);
         imagealphablending($src, true);
         imagesavealpha($src, true);
 
         $currentRatio = $width / $height;
-
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -134,23 +123,17 @@ class BannerController extends Controller
         }
 
         $finalWidth = $cropWidth;
-
-        if ($finalWidth > $maxWidth) {
+        if ($finalWidth > $maxWidth)
             $finalWidth = $maxWidth;
-        }
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
-
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
-
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
 
-        if (!imagewebp($dst, $destinationPath, 70)) {
+        if (!imagewebp($dst, $destinationPath, 70))
             throw new Exception('Failed to save WebP image.');
-        }
-
         imagedestroy($src);
         imagedestroy($dst);
 
@@ -167,25 +150,14 @@ class BannerController extends Controller
     public function getBannersForEditor(Menu $menu)
     {
         $banners = $menu->banners()->where('is_active', 1)->orderBy('created_at', 'asc')->get();
-        $fullSlug = $menu->full_slug;
 
-        return response()->json($banners->map(function ($banner) use ($fullSlug) {
+        return response()->json($banners->map(function ($banner) {
             return [
-                'url' => '/' . ltrim($fullSlug, '/') . '/' . $banner->file_name,
+                'url' => asset('storage/' . $banner->file_path),
                 'name' => $banner->file_name,
                 'width' => $banner->image_width,
                 'height' => $banner->image_height
             ];
         }));
-    }
-
-    public function serveBannerImage($menu, $filename)
-    {
-        $banner = $menu->banners()->where('file_name', $filename)->first();
-        abort_if(!$banner, 404);
-
-        $storagePath = storage_path('app/public/' . $banner->file_path);
-        abort_if(!file_exists($storagePath), 404);
-        return response()->file($storagePath);
     }
 }

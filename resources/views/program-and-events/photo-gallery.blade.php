@@ -10,8 +10,8 @@
                     $galleries = $concern->galleries;
                     $firstImg = $galleries->first();
 
-                    $imageUrls = $galleries->map(function ($g) use ($concern) {
-                        return url($concern->menu->full_slug . '/' . basename($g->file_path));
+                    $imageUrls = $galleries->map(function ($g) {
+                        return asset('storage/' . $g->file_path);
                     })->toJson();
                 @endphp
 
@@ -19,9 +19,8 @@
                     onclick="openGalleryModal('{{ $concern->menu->name }}', {{ $imageUrls }})">
 
                     <div class="w-full aspect-23/9 overflow-hidden shimmer bg-white relative">
-                        <img src="{{ url($concern->menu->full_slug . '/' . basename($firstImg->file_path)) }}"
-                            class="w-full h-full object-cover" onload="this.parentElement.classList.remove('shimmer')"
-                            alt="{{ $concern->menu->name }}">
+                        <img src="{{ asset('storage/' . $firstImg->file_path) }}" class="w-full h-full object-cover"
+                            onload="this.parentElement.classList.remove('shimmer')" alt="{{ $concern->menu->name }}">
                     </div>
 
                     <div class="p-4 flex items-center justify-between">
