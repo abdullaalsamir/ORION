@@ -9,8 +9,7 @@
                 <p class="text-xs text-slate-400">Organize site menus and their children</p>
             </div>
 
-            <form method="POST" action="{{ route('admin.menus.store') }}"
-                class="flex items-center gap-3 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+            <form method="POST" action="{{ route('admin.menus.store') }}" class="flex items-center gap-3">
                 @csrf
                 <input type="text" name="name" placeholder="Menu Name..." required class="input-field h-10! w-48">
 
@@ -56,11 +55,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="badge badge-info text-[9px]">Functional</span>
                         <span class="badge badge-success text-[9px]">Active</span>
                         <div class="flex gap-1 border-l pl-4 border-transparent">
-                            <div class="w-8"></div>
-                            <div class="w-8"></div>
+                            <div class="w-[1.6rem]"></div>
+                            <div class="w-[1.7rem]"></div>
                         </div>
                     </div>
                 </li>

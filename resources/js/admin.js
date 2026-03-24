@@ -29,7 +29,7 @@ window.pdfjsLib = pdfjsLib;
 Turbo.start();
 
 import { initGlobalHelpers } from './admin/core/helpers';
-import { initLayoutUI, restoreSidebarScroll, initTreeLogic } from './admin/core/layout';
+import { initLayoutUI, updateSidebarActiveState, initTreeLogic } from './admin/core/layout';
 import { initMenuPage } from './admin/pages/menus';
 import { initPagesPage } from './admin/pages/pages';
 import { initBannersPage } from './admin/pages/banners';
@@ -45,10 +45,26 @@ import { initConnectsPage } from './admin/pages/connects';
 import { initFooterPage } from './admin/pages/footer';
 import { initSettingsPage } from './admin/pages/settings';
 
+document.addEventListener('turbo:before-visit', (event) => {
+    updateSidebarActiveState(event.detail.url);
+});
+
+let sidebarScrollTop = 0;
+
+document.addEventListener('turbo:before-render', () => {
+    const nav = document.querySelector('.sidebar-nav');
+    if (nav) sidebarScrollTop = nav.scrollTop;
+});
+
+document.addEventListener('turbo:render', () => {
+    const nav = document.querySelector('.sidebar-nav');
+    if (nav) nav.scrollTop = sidebarScrollTop;
+});
+
 document.addEventListener('turbo:load', () => {
     initGlobalHelpers();
     initLayoutUI();
-    restoreSidebarScroll();
+    updateSidebarActiveState();
     initTreeLogic();
     initMenuPage();
     initPagesPage();

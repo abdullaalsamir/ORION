@@ -2,7 +2,7 @@
 
 <li data-id="{{ $menu->id }}" class="sortable-item tree-item group">
     <div
-        class="flex items-center justify-between p-4.5 bg-white border border-slate-200 rounded-2xl hover:border-admin-blue/50 transition-all relative z-10">
+        class="flex items-center justify-between p-4.5 max-h-15.5 bg-white border border-slate-200 rounded-2xl hover:border-admin-blue/50 transition-all relative z-10">
         <div class="flex items-center gap-3">
 
             <div class="w-6 flex justify-center">

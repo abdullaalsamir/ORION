@@ -13,7 +13,7 @@
         <div class="admin-card-body custom-scrollbar bg-slate-50/20">
             <ul id="root-menu-list" class="space-y-3">
                 <li
-                    class="p-4.5 mb-6 bg-white border border-slate-200 rounded-2xl flex items-center justify-between opacity-60">
+                    class="p-3 mb-6 bg-white border border-slate-200 rounded-2xl flex items-center justify-between opacity-60">
                     <div class="flex items-center gap-4">
                         <div class="w-6"></div>
                         <div class="flex flex-row items-center gap-2">

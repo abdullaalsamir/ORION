@@ -236,3 +236,27 @@
     75% { transform: translateX(-4px); }
     100% { transform: translateX(0); }
 }
+
+.shimmer {
+    background: #f8fafc;
+    background-image: linear-gradient(to right, #f8fafc 0%, #f1f5f9 20%, #f8fafc 40%, #f8fafc 100%);
+    background-repeat: no-repeat;
+    background-size: 150% 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+    0% { background-position: 150% 0; }
+    100% { background-position: -150% 0; }
+}
+
+html.turbo-loading main {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.turbo-progress-bar {
+    height: 3px;
+    background-color: var(--color-accent);
+}

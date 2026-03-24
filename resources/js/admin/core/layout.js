@@ -9,23 +9,32 @@ export function initLayoutUI() {
         updateClock();
         window.clockInterval = setInterval(updateClock, 1000);
     }
-
-    const body = document.body;
-    const adminName = body.dataset.adminName;
-    const greetingEl = document.getElementById('greetingText');
-    if (greetingEl && adminName) {
-        const hr = new Date().getHours();
-        let txt = hr < 12 ? 'Good Morning' : (hr < 17 ? 'Good Afternoon' : 'Good Evening');
-        greetingEl.innerHTML = `<span class="text-slate-400 font-normal">${txt}, </span><span class="text-slate-600 font-bold">${adminName}</span>`;
-    }
-
-    const nav = document.querySelector('.sidebar-nav');
-    if (nav) nav.onscroll = () => sessionStorage.setItem('sidebar-scroll', nav.scrollTop);
 }
 
-export function restoreSidebarScroll() {
-    const nav = document.querySelector('.sidebar-nav');
-    if (nav && sessionStorage.getItem('sidebar-scroll')) nav.scrollTop = sessionStorage.getItem('sidebar-scroll');
+export function updateSidebarActiveState(targetUrl = null) {
+    const pathName = targetUrl 
+        ? new URL(targetUrl, window.location.origin).pathname 
+        : window.location.pathname;
+
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        const linkUrl = new URL(link.href, window.location.origin).pathname;
+
+        let isActive = false;
+        
+        if (linkUrl === '/admin' || linkUrl === '/admin/') {
+            isActive = pathName === '/admin' || pathName === '/admin/';
+        } else {
+            isActive = pathName.startsWith(linkUrl);
+        }
+
+        if (isActive) {
+            link.classList.add('bg-white/10', 'text-accent', 'border-accent');
+            link.classList.remove('text-slate-300', 'hover:bg-white/5', 'hover:text-white', 'border-transparent');
+        } else {
+            link.classList.remove('bg-white/10', 'text-accent', 'border-accent');
+            link.classList.add('text-slate-300', 'hover:bg-white/5', 'hover:text-white', 'border-transparent');
+        }
+    });
 }
 
 export function initTreeLogic() {

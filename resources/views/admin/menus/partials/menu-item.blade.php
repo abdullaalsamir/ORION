@@ -23,9 +23,11 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <span class="badge {{ $menu->is_multifunctional ? 'badge-purple' : 'badge-info' }} text-[9px]!">
-                {{ $menu->is_multifunctional ? 'Multifunctional' : 'Functional' }}
-            </span>
+            @if($menu->is_multifunctional)
+                <span class="badge badge-purple text-[9px]!">
+                    Multifunctional
+                </span>
+            @endif
 
             <span class="badge {{ $menu->isEffectivelyActive() ? 'badge-success' : 'badge-danger' }} text-[9px]!">
                 {{ $menu->isEffectivelyActive() ? 'Active' : 'Inactive' }}
