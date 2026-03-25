@@ -76,7 +76,7 @@
             </div>
 
             <form id="addDirectorForm" action="{{ route('admin.directors.store') }}" method="POST"
-                enctype="multipart/form-data" class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6">
+                enctype="multipart/form-data" class="flex-1 overflow-y-auto custom-scrollbar py-6">
                 @csrf
                 <div class="grid grid-cols-15 gap-10">
                     <div class="col-span-4 flex flex-col items-center">
@@ -133,7 +133,7 @@
                 </button>
             </div>
 
-            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6 space-y-6">
+            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar py-6 space-y-6">
                 @csrf
                 <input type="file" name="image" id="editInput" accept="image/*" class="hidden"
                     onchange="handlePreview(this, 'editPreview')">

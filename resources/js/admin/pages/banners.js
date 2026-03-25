@@ -45,9 +45,9 @@ export function initBannersPage() {
         });
     }
 
-    window.openBannerEditModal = (id, name, fullSlug, isActive) => {
+    window.openBannerEditModal = (id, filePath, isActive) => { 
         window.currentBannerId = id;
-        document.getElementById('editPreviewContainer').innerHTML = `<img src="/${fullSlug}/${name}?t=${Date.now()}" class="w-full h-full object-contain">`;
+        document.getElementById('editPreviewContainer').innerHTML = `<img src="/storage/${filePath}?v=${Date.now()}" class="w-full h-full object-contain transition-all duration-500" alt="banner">`;
         document.getElementById('editActiveToggle').checked = (isActive == 1);
         const modal = document.getElementById('editModal');
         modal.classList.remove('hidden');

@@ -8,12 +8,31 @@ export function setupModule(pathPart, storeUrl, updateUrlPrefix, currentIdKey) {
 
     if (addF) addF.onsubmit = (e) => {
         e.preventDefault();
+        
+        const btn = e.submitter || addF.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+        btn.disabled = true;
+
         window.axios.post(storeUrl, new FormData(addF))
-            .then(() => Turbo.visit(window.location.href));
+            .then(() => {
+                if (Turbo.cache) Turbo.cache.clear();
+                Turbo.visit(window.location.href, { action: 'replace' });
+            })
+            .catch(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
     };
 
     if (editF) editF.onsubmit = (e) => {
         e.preventDefault();
+
+        const btn = e.submitter || editF.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+        btn.disabled = true;
+
         const fd = new FormData(editF);
         fd.append('_method', 'PUT');
         
@@ -24,6 +43,13 @@ export function setupModule(pathPart, storeUrl, updateUrlPrefix, currentIdKey) {
         fd.append('is_active', document.getElementById('editActive').checked ? 1 : 0);
         
         window.axios.post(`${updateUrlPrefix}/${window[currentIdKey]}`, fd)
-            .then(() => Turbo.visit(window.location.href));
+            .then(() => {
+                if (Turbo.cache) Turbo.cache.clear();
+                Turbo.visit(window.location.href, { action: 'replace' });
+            })
+            .catch(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
     };
 }

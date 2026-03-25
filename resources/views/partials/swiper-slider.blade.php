@@ -8,13 +8,13 @@
 
                     <div
                         class="absolute inset-0 flex items-center bg-[linear-gradient(to_right,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.65)_6%,rgba(0,0,0,0.55)_14%,rgba(0,0,0,0.42)_22%,rgba(0,0,0,0.30)_30%,rgba(0,0,0,0.20)_40%,rgba(0,0,0,0.11)_48%,rgba(0,0,0,0.05)_55%,rgba(0,0,0,0)_60%)]">
-                        <div class="container mx-auto w-[90%] max-w-350">
-                            <div class="max-w-3xl space-y-4 slide-content">
-                                <span class="text-5xl text-white text-shadow-lg font-bold leading-tight">
+                        <div class="container pl-[5%]">
+                            <div class="slide-content space-y-4">
+                                <span class="max-w-3xl text-5xl text-white text-shadow-lg font-bold leading-tight">
                                     {{ $slider->header_1 }} <br>
                                     <span class="text-amber-300">{{ $slider->header_2 }}</span>
                                 </span>
-                                <p class="text-lg text-white opacity-90">
+                                <p class="max-w-xl text-lg font-normal text-white text-shadow-xs mt-4">
                                     {{ $slider->description }}
                                 </p>
                                 @if($slider->link_url)

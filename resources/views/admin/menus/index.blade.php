@@ -71,64 +71,66 @@
     </div>
 
     <div id="editModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-8 pb-2 border-b border-slate-100">
-                <h1 class="mb-0!">Edit Menu</h1>
+        <div class="modal-content max-w-xl! flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
+                <h1 class="mb-0!" id="editModalTitle"></h1>
                 <button onclick="closeModal('editModal')" class="btn-icon"><i class="fas fa-times text-xl"></i></button>
             </div>
 
-            <form method="POST" id="editForm" class="flex flex-col gap-5">
-                @csrf @method('PUT')
+            <form method="POST" id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pt-6">
+                <div class="flex flex-col gap-5">
+                    @csrf @method('PUT')
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Menu Name</label>
-                    <input type="text" name="name" id="editName" required class="input-field w-full">
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Parent Category</label>
-                    <select name="parent_id" id="editParent" class="input-field w-full">
-                        <option value="" data-active="1">⁝⁝⁝ Main Menu ⁝⁝⁝</option>
-                        @foreach($menus as $m)
-                            <option value="{{ $m->id }}" data-active="{{ $m->isEffectivelyActive() ? '1' : '0' }}">
-                                {{ $m->name }}
-                            </option>
-                            @foreach($m->children as $c)
-                                <option value="{{ $c->id }}" data-active="{{ $c->isEffectivelyActive() ? '1' : '0' }}"
-                                    class="text-slate-400">
-                                    — {{ $c->name }}
-                                </option>
-                            @endforeach
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Menu Type</label>
-                    <div class="flex bg-white p-1 rounded-xl border border-slate-200 h-12 w-full items-center">
-                        <label class="cursor-pointer flex-1 flex items-center justify-center h-full">
-                            <input type="radio" name="is_multifunctional" value="0" id="edit-type-functional"
-                                class="peer sr-only">
-                            <span
-                                class="w-full text-center px-5 py-2 rounded-lg text-sm text-slate-400 border border-transparent peer-checked:text-sky-600 peer-checked:border-slate-200 transition-all uppercase">Functional</span>
-                        </label>
-                        <label class="cursor-pointer flex-1 flex items-center justify-center h-full">
-                            <input type="radio" name="is_multifunctional" value="1" id="edit-type-multi"
-                                class="peer sr-only">
-                            <span
-                                class="w-full text-center px-5 py-2 rounded-lg text-sm text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white transition-all uppercase">Multifunctional</span>
-                        </label>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Menu Name</label>
+                        <input type="text" name="name" id="editName" required class="input-field w-full">
                     </div>
-                </div>
 
-                <div class="flex items-center justify-between mt-4">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="editActive" name="is_active">
-                        <div class="toggle-bg"></div>
-                        <span id="toggleLabel" class="ml-3 font-bold text-slate-600">Active</span>
-                    </label>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Parent Category</label>
+                        <select name="parent_id" id="editParent" class="input-field w-full">
+                            <option value="" data-active="1">⁝⁝⁝ Main Menu ⁝⁝⁝</option>
+                            @foreach($menus as $m)
+                                <option value="{{ $m->id }}" data-active="{{ $m->isEffectivelyActive() ? '1' : '0' }}">
+                                    {{ $m->name }}
+                                </option>
+                                @foreach($m->children as $c)
+                                    <option value="{{ $c->id }}" data-active="{{ $c->isEffectivelyActive() ? '1' : '0' }}"
+                                        class="text-slate-400">
+                                        — {{ $c->name }}
+                                    </option>
+                                @endforeach
+                            @endforeach
+                        </select>
+                    </div>
 
-                    <button type="submit" class="btn-primary h-10">Update Menu</button>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Menu Type</label>
+                        <div class="flex bg-white p-1 rounded-xl border border-slate-200 h-12 w-full items-center">
+                            <label class="cursor-pointer flex-1 flex items-center justify-center h-full">
+                                <input type="radio" name="is_multifunctional" value="0" id="edit-type-functional"
+                                    class="peer sr-only">
+                                <span
+                                    class="w-full text-center px-5 py-2 rounded-lg text-sm text-slate-400 border border-transparent peer-checked:text-sky-600 peer-checked:border-slate-200 transition-all uppercase">Functional</span>
+                            </label>
+                            <label class="cursor-pointer flex-1 flex items-center justify-center h-full">
+                                <input type="radio" name="is_multifunctional" value="1" id="edit-type-multi"
+                                    class="peer sr-only">
+                                <span
+                                    class="w-full text-center px-5 py-2 rounded-lg text-sm text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white transition-all uppercase">Multifunctional</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-slate-100 pt-4 shrink-0 bg-white">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="editActive" name="is_active">
+                            <div class="toggle-bg"></div>
+                            <span id="toggleLabel" class="ml-3 font-bold text-slate-600">Active</span>
+                        </label>
+
+                        <button type="submit" class="btn-primary h-10">Update Menu</button>
+                    </div>
                 </div>
             </form>
         </div>

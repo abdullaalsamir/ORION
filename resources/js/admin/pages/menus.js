@@ -47,6 +47,7 @@ export function initMenuPage() {
             const d = btn.dataset;
             editForm.action = `/admin/menus/${d.id}`;
             document.getElementById('editName').value = d.name;
+            document.getElementById('editModalTitle').innerText = `Edit: ${d.name}`;
             editParent.value = d.parent || '';
             document.getElementById(d.multi == '1' ? 'edit-type-multi' : 'edit-type-functional').checked = true;
             

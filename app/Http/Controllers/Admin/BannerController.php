@@ -36,7 +36,7 @@ class BannerController extends Controller
         try {
             $file = $request->file('image');
             $fileName = time() . '.webp';
-            $relativeDir = "banners/{$menu->slug}";
+            $relativeDir = "banners/{$menu->full_slug}";
 
             if (!Storage::disk('public')->exists($relativeDir))
                 Storage::disk('public')->makeDirectory($relativeDir);

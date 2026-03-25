@@ -61,6 +61,10 @@ document.addEventListener('turbo:render', () => {
     if (nav) nav.scrollTop = sidebarScrollTop;
 });
 
+document.addEventListener('turbo:before-cache', (event) => {
+    event.preventDefault();
+});
+
 document.addEventListener('turbo:load', () => {
     initGlobalHelpers();
     initLayoutUI();

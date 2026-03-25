@@ -25,16 +25,21 @@
                         </div>
 
                         <div
-                            class="w-48 aspect-23/9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2">
-                            <img src="{{ asset('storage/' . $slider->image_path) }}"
-                                class="w-full h-full object-cover {{ !$slider->is_active ? 'opacity-40 grayscale' : '' }}">
+                            class="w-56 aspect-23/9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 relative">
+
+                            <div class="absolute inset-0 shimmer" id="shimmer-{{ $slider->id }}"></div>
+
+                            <img src="{{ asset('storage/sliders/thumbs/' . basename($slider->image_path)) }}?v={{ $slider->updated_at->timestamp }}"
+                                class="w-full h-full object-cover transition-opacity duration-300 opacity-0 {{ !$slider->is_active ? 'grayscale' : '' }}"
+                                onload="this.classList.remove('opacity-0'); document.getElementById('shimmer-{{ $slider->id }}').remove();">
                         </div>
 
-                        <div class="flex-1 min-w-0 flex flex-col gap-1 ml-4">
+                        <div class="flex-1 min-w-0 flex flex-col gap-1 ml-4 self-start">
                             <span
-                                class="font-bold text-slate-700 text-sm truncate uppercase tracking-tight">{{ $slider->header_1 }}</span>
-                            <span class="text-admin-blue font-bold text-xs truncate">{{ $slider->header_2 }}</span>
-                            <p class="text-[11px] text-slate-400 line-clamp-1 mt-1">{{ $slider->description }}</p>
+                                class="font-semibold text-slate-900 text-sm truncate uppercase tracking-tight mt-1">{{ $slider->header_1 }}</span>
+                            <span
+                                class="font-semibold text-admin-blue text-sm truncate uppercase tracking-tight">{{ $slider->header_2 }}</span>
+                            <p class="text-xs text-slate-400 line-clamp-1 mt-1">{{ $slider->description }}</p>
                         </div>
 
                         <div class="flex items-center gap-4 shrink-0 px-4">
@@ -68,15 +73,15 @@
 
     <div id="addModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
                 <h1 class="mb-0!">Add New Slider</h1>
                 <button type="button" onclick="closeModal('addModal')" class="btn-icon">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            <form action="{{ route('admin.sliders.store') }}" method="POST" enctype="multipart/form-data"
-                class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-5">
+            <form id="addForm" action="{{ route('admin.sliders.store') }}" method="POST" enctype="multipart/form-data"
+                class="flex-1 overflow-y-auto custom-scrollbar py-6 pr-2 space-y-5">
                 @csrf
                 <input type="file" name="image" id="addInput" accept="image/*" class="hidden"
                     onchange="handlePreview(this, 'addPreview')">
@@ -90,13 +95,13 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="relative">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1 (White)</label>
                         <input type="text" name="header_1" maxlength="30" required class="input-field w-full"
                             oninput="updateCount(this, 'addC1', 30)">
                         <span id="addC1" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                     <div class="relative">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Blue)</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Amber)</label>
                         <input type="text" name="header_2" maxlength="30" required class="input-field w-full"
                             oninput="updateCount(this, 'addC2', 30)">
                         <span id="addC2" class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
@@ -104,7 +109,7 @@
                 </div>
 
                 <div class="relative">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text</label>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text (Optional)</label>
                     <textarea name="description" maxlength="150" class="input-field w-full h-24 py-3 resize-none"
                         oninput="updateCount(this, 'addCD', 150)"></textarea>
                     <span id="addCD" class="absolute right-3 bottom-2 text-[9px] text-slate-300 font-bold">0/150</span>
@@ -125,22 +130,22 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="flex justify-end pt-4 sticky bottom-0 bg-white">
-                    <button type="submit" class="btn-success h-10">Upload Slider</button>
-                </div>
             </form>
+
+            <div class="flex justify-end items-center border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <button type="submit" form="addForm" class="btn-success h-10">Upload Slider</button>
+            </div>
         </div>
     </div>
 
     <div id="editModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
                 <h1 class="mb-0!">Edit Slider</h1>
                 <button onclick="closeModal('editModal')" class="btn-icon"><i class="fas fa-times text-xl"></i></button>
             </div>
 
-            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-5">
+            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar py-6 pr-2 space-y-5">
                 @csrf
                 <input type="file" name="image" id="editInput" accept="image/*" class="hidden"
                     onchange="handlePreview(this, 'editPreview')">
@@ -156,14 +161,14 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="relative">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 1 (White)</label>
                         <input type="text" name="header_1" id="editH1" maxlength="30" required class="input-field w-full"
                             oninput="updateCount(this, 'editC1', 30)">
                         <span id="editC1"
                             class="absolute right-3 bottom-2.5 text-[9px] text-slate-300 font-bold">0/30</span>
                     </div>
                     <div class="relative">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Blue)</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Header Line 2 (Amber)</label>
                         <input type="text" name="header_2" id="editH2" maxlength="30" required class="input-field w-full"
                             oninput="updateCount(this, 'editC2', 30)">
                         <span id="editC2"
@@ -172,7 +177,7 @@
                 </div>
 
                 <div class="relative">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text</label>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description Text (Optional)</label>
                     <textarea name="description" id="editDesc" maxlength="150"
                         class="input-field w-full h-24 py-3 resize-none"
                         oninput="updateCount(this, 'editCD', 150)"></textarea>
@@ -194,18 +199,17 @@
                         </select>
                     </div>
                 </div>
-
-                <div
-                    class="flex items-center justify-between mt-2 sticky bottom-0 bg-white pb-2 pt-4 border-t border-slate-50">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="editActive" name="is_active">
-                        <div class="toggle-bg"></div>
-                        <span id="sliderStatusLabel" class="ml-3 font-bold text-slate-600">Active</span>
-                    </label>
-
-                    <button type="submit" class="btn-primary h-10">Update Slider</button>
-                </div>
             </form>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="editActive" name="is_active">
+                    <div class="toggle-bg"></div>
+                    <span id="sliderStatusLabel" class="ml-3 font-bold text-slate-600">Active</span>
+                </label>
+
+                <button type="submit" form="editForm" class="btn-primary h-10">Update Slider</button>
+            </div>
         </div>
     </div>
 @endsection

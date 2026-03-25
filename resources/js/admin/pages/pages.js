@@ -7,6 +7,9 @@ export function initPagesPage() {
     const editor = ace.edit("ace-editor");
     editor.session.setMode("ace/mode/html");
     editor.setTheme("ace/theme/github");
+    editor.session.setUseWrapMode(true);
+    editor.setOption("wrap", true);
+    editor.setShowPrintMargin(false);
     const applyFormatting = (type) => {
         const selectedText = editor.getSelectedText();
         const toggleTag = (text, tagName) => {
@@ -52,7 +55,13 @@ export function initPagesPage() {
             window.axios.get(`/admin/banners/get-for-editor/${curPageId}`)
             .then(images => {
                 const strip = document.getElementById('imageStrip');
-                strip.innerHTML = images.length ? '' : 'No Banners';
+                strip.innerHTML = images.length 
+                ? '' 
+                : `
+                    <div class="flex items-center justify-center w-full h-full">
+                        <span class="text-[11px] font-bold text-rose-300 uppercase">No Banners Found</span>
+                    </div>
+                `;
                 images.forEach(img => {
                     const div = document.createElement('div');
                     div.className = "shrink-0 w-full h-auto rounded-xl overflow-hidden border-1 border-transparent hover:border-admin-blue cursor-pointer transition-all duration-300";

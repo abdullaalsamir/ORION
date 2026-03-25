@@ -62,7 +62,7 @@
                     class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-30">
                     <button
                         class="w-8 h-8 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center text-xs text-slate-600 hover:text-white hover:bg-admin-blue transition-all cursor-pointer"
-                        onclick="openBannerEditModal({{ $banner->id }}, '{{ $banner->file_name }}', '{{ $menu->full_slug }}', {{ $banner->is_active }})">
+                        onclick="openBannerEditModal({{ $banner->id }}, '{{ $banner->file_path }}', {{ $banner->is_active }})">
                         <i class="fas fa-pencil"></i>
                     </button>
                     <button
