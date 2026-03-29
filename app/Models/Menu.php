@@ -130,7 +130,10 @@ class Menu extends Model
     public static function getFunctionalLeafMenus()
     {
         $all = self::where('is_active', 1)
-            ->where('is_multifunctional', 0)
+            ->where(function ($q) {
+                $q->where('is_multifunctional', 0)
+                    ->orWhereIn('slug', ['csr', 'career']);
+            })
             ->where('slug', '!=', 'home')
             ->orderBy('order')
             ->get();
@@ -160,5 +163,22 @@ class Menu extends Model
             $parent = $parent->parent;
         }
         return implode(' <i class="fas fa-chevron-right" style="font-size:8px;margin:0 3px"></i> ', $path);
+    }
+
+    public function getContentAttribute($value)
+    {
+        if (!$value)
+            return null;
+
+        if (in_array($this->slug, ['career', 'csr'])) {
+            $lines = preg_split('/\r\n|\r|\n/', trim($value));
+
+            return collect($lines)
+                ->filter()
+                ->map(fn($line) => '<p>' . e($line) . '</p>')
+                ->implode('');
+        }
+
+        return $value;
     }
 }

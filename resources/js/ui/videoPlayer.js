@@ -26,10 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     'play',
                     'progress',
                     'current-time',
+                    'duration',
                     'mute',
                     'volume',
                     'fullscreen'
                 ]
+            })
+
+            player.on('play', () => {
+                players.forEach(otherPlayer => {
+                    if (otherPlayer !== player) {
+                        
+                        otherPlayer.stop() 
+                        
+                        if (otherPlayer.elements.container) {
+                            otherPlayer.elements.container.classList.remove('plyr--has-played')
+                        }
+                    }
+                })
             })
 
             players.push(player)

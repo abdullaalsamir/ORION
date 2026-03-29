@@ -19,8 +19,11 @@
 
                 <div class="swiper-wrapper">
                     @foreach($concern->galleries as $gallery)
+                        @php
+                            $sliderPath = dirname(dirname($gallery->file_path)) . '/concern-slider/' . basename($gallery->file_path);
+                        @endphp
                         <div class="swiper-slide w-full h-full relative">
-                            <img src="{{ asset('storage/' . $gallery->file_path) }}" class="w-full h-full object-cover"
+                            <img src="{{ asset('storage/' . $sliderPath) }}" class="w-full h-full object-cover"
                                 alt="{{ $pageMenu->name }}">
                         </div>
                     @endforeach
@@ -28,7 +31,7 @@
 
                 <div
                     class="absolute inset-0 z-10 pointer-events-none flex items-center bg-[linear-gradient(to_right,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.65)_6%,rgba(0,0,0,0.55)_14%,rgba(0,0,0,0.42)_22%,rgba(0,0,0,0.30)_30%,rgba(0,0,0,0.20)_40%,rgba(0,0,0,0.11)_48%,rgba(0,0,0,0.05)_55%,rgba(0,0,0,0)_60%)]">
-                    <div class="container mx-auto w-[90%] max-w-350">
+                    <div class="container pl-[5%]">
                         <span class="text-5xl text-white text-shadow-lg font-bold leading-tight max-w-lg block">
                             {{ $pageMenu->name }}
                         </span>

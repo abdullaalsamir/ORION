@@ -5,7 +5,7 @@ import { lockScroll, unlockScroll } from '../core/scroll'
 window.galleryMainSwiper = null
 window.galleryThumbsSwiper = null
 
-window.openGalleryModal = function(title, images) {
+window.openGalleryModal = function(title, mainImages, thumbImages) {
 
     const mainWrapper = document.getElementById('mainSwiperWrapper')
     const thumbsWrapper = document.getElementById('thumbsSwiperWrapper')
@@ -13,17 +13,18 @@ window.openGalleryModal = function(title, images) {
     mainWrapper.innerHTML = ''
     thumbsWrapper.innerHTML = ''
 
-    if (images.length > 0) {
+    if (mainImages.length > 0) {
         const titlePlaceholder = document.getElementById('galleryTitlePlaceholder')
-        if (titlePlaceholder) titlePlaceholder.src = images[0]
+        if (titlePlaceholder) titlePlaceholder.src = mainImages[0]
     }
 
-    images.forEach(url => {
+    mainImages.forEach((mainUrl, index) => {
+        const thumbUrl = thumbImages[index]
 
         const mainSlide = `
         <div class="swiper-slide flex justify-center items-center relative">
-            <div class="relative w-full max-w-[calc(100vh*23/9)] shimmer">
-                <img src="${url}" 
+            <div class="relative w-full max-w-[calc(100vh*20/9)] shimmer">
+                <img src="${mainUrl}" 
                     class="w-full h-auto object-contain select-none" 
                     draggable="false"
                     onload="this.parentElement.classList.remove('shimmer')">
@@ -33,8 +34,8 @@ window.openGalleryModal = function(title, images) {
         mainWrapper.insertAdjacentHTML('beforeend', mainSlide)
 
         const thumbSlide = `
-        <div class="swiper-slide cursor-pointer overflow-hidden rounded-lg relative shimmer bg-slate-800 aspect-23/9">
-            <img src="${url}" 
+        <div class="swiper-slide cursor-pointer overflow-hidden rounded-lg relative shimmer bg-slate-800 aspect-20/9">
+            <img src="${thumbUrl}" 
                 class="w-full h-full object-cover"
                 onload="this.parentElement.classList.remove('shimmer')">
         </div>`

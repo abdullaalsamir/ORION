@@ -23,17 +23,20 @@
                                 data-id="{{ $item->id }}">
 
                                 <div
-                                    class="drag-handle w-8 flex justify-center {{ count($items) > 1 ? 'cursor-grab active:cursor-grabbing text-slate-300 hover:text-admin-blue' : 'opacity-0 pointer-events-none' }}">
+                                    class="drag-handle w-8 flex justify-center {{ count($items) > 1 ? 'cursor-grab active:cursor-grabbing text-slate-300 hover:text-admin-blue transition-colors' : 'opacity-0 pointer-events-none' }}">
                                     <i class="fas fa-arrows-up-down-left-right"></i>
                                 </div>
 
                                 <div
-                                    class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 flex items-center justify-center">
+                                    class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 relative flex items-center justify-center">
+
                                     @if($item->file_type === 'image')
-                                        <img src="{{ asset('storage/' . $item->file_path) }}"
-                                            class="w-full h-full object-cover transition-all duration-500">
+                                        <div class="absolute inset-0 shimmer" id="shimmer-{{ $item->id }}"></div>
+                                        <img src="{{ asset('storage/news/thumbs/' . basename($item->file_path)) }}?v={{ $item->updated_at->timestamp }}"
+                                            class="w-full h-full object-cover transition-opacity duration-300 opacity-0 {{ !$item->is_active ? 'grayscale' : '' }}"
+                                            onload="this.classList.remove('opacity-0'); document.getElementById('shimmer-{{ $item->id }}').remove();">
                                     @else
-                                        <div class="flex flex-col items-center justify-center text-red-500">
+                                        <div class="flex flex-col items-center justify-center text-red-500 w-full h-full">
                                             <i class="fas fa-file-pdf text-4xl"></i>
                                         </div>
                                     @endif
@@ -45,7 +48,7 @@
                                     </span>
 
                                     <div class="text-[11px] text-slate-400 line-clamp-1 mt-1">
-                                        {!! $item->description !!}
+                                        {!! strip_tags($item->description) !!}
                                     </div>
 
                                     <div
@@ -72,8 +75,7 @@
                                 </div>
 
                                 <div class="flex items-center border-l pl-4 border-slate-100 space-x-1">
-                                    <button class="btn-icon w-8 p-1.5!"
-                                        onclick="openNewsEditModal({{ json_encode($item) }}, '{{ $menu->full_slug }}')">
+                                    <button class="btn-icon w-8 p-1.5!" onclick="openNewsEditModal({{ json_encode($item) }})">
                                         <i class="fas fa-pencil text-xs"></i>
                                     </button>
                                     <button class="btn-danger w-8 p-1.5!" onclick="deleteNews({{ $item->id }})">
@@ -96,15 +98,16 @@
 
     <div id="addModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
-                <h1 class="mb-0!">Add News Item</h1>
+
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
+                <h1 class="mb-0!">Add New News Item</h1>
                 <button type="button" onclick="closeModal('addModal')" class="btn-icon">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data"
-                class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
+            <form id="addForm" action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data"
+                class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
 
                 <div class="flex flex-col gap-1">
@@ -115,7 +118,7 @@
                     <input type="file" name="file" id="addInput" accept="image/*,application/pdf" class="hidden"
                         onchange="handleNewsPreview(this, 'addPreview', 'addFileName')">
 
-                    <div class="aspect-video bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-admin-blue transition-all group"
+                    <div class="w-full aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-admin-blue transition-all group"
                         id="addPreview" onclick="document.getElementById('addInput').click()">
                         <i
                             class="fas fa-camera text-3xl text-slate-300 mb-2 group-hover:text-admin-blue transition-colors"></i>
@@ -141,7 +144,7 @@
                     <div class="col-span-6 flex flex-col gap-1">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Pin News</label>
                         <div class="input-field flex items-center justify-between h-10.5!">
-                            <span id="addPinLabel" class="text-xs font-bold text-admin-blue">Pin Yes</span>
+                            <span id="addPinLabel" class="text-[11px] font-bold text-admin-blue uppercase">Pin Yes</span>
                             <input type="hidden" name="is_pin" value="0">
                             <label class="toggle-switch scale-75">
                                 <input type="checkbox" name="is_pin" value="1" checked
@@ -155,26 +158,29 @@
                 <div class="relative flex flex-col gap-1">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description</label>
                     <textarea name="description" id="addDesc" required
-                        class="input-field w-full h-32 py-3 resize-none custom-scrollbar"></textarea>
-                </div>
-
-                <div class="flex justify-end pt-4 sticky bottom-0 bg-white border-t border-slate-50">
-                    <button type="submit" class="btn-success h-10">Save News Item</button>
+                        class="input-field w-full h-48 py-3 resize-none custom-scrollbar"></textarea>
                 </div>
             </form>
+
+            <div class="flex justify-end items-center border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <button type="submit" form="addForm" class="btn-success h-10">
+                    Save News Item
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="editModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
+
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
                 <h1 class="mb-0!">Edit News Item</h1>
                 <button onclick="closeModal('editModal')" class="btn-icon">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
+            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
 
                 <input type="file" name="file" id="editInput" accept="image/*,application/pdf" class="hidden"
@@ -185,16 +191,16 @@
                         Replace Image / PDF
                     </label>
 
-                    <div class="relative group cursor-pointer aspect-video"
+                    <div class="relative group cursor-pointer w-full aspect-video"
                         onclick="document.getElementById('editInput').click()">
                         <div id="editPreview"
-                            class="w-full h-full bg-slate-100 rounded-3xl border border-slate-200 overflow-hidden flex items-center justify-center">
+                            class="w-full h-full bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center">
                         </div>
 
                         <div
-                            class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all rounded-3xl">
+                            class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all rounded-2xl">
                             <span class="text-white font-bold text-[10px] uppercase tracking-widest">
-                                Click to Replace
+                                Replace Image/PDF
                             </span>
                         </div>
                     </div>
@@ -216,7 +222,7 @@
                     <div class="col-span-6 flex flex-col gap-1">
                         <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Pin News</label>
                         <div class="input-field flex items-center justify-between h-10.5!">
-                            <span id="editPinLabel" class="text-xs font-bold text-slate-500">Pin No</span>
+                            <span id="editPinLabel" class="text-[11px] font-bold text-slate-500 uppercase">Pin No</span>
                             <input type="hidden" name="is_pin" value="0">
                             <label class="toggle-switch scale-75">
                                 <input type="checkbox" id="editPin" name="is_pin" value="1"
@@ -230,19 +236,21 @@
                 <div class="relative flex flex-col gap-1">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description</label>
                     <textarea name="description" id="editDesc" required
-                        class="input-field w-full h-32 py-3 resize-none custom-scrollbar"></textarea>
-                </div>
-
-                <div
-                    class="flex items-center justify-between mt-4 sticky bottom-0 bg-white pb-2 pt-4 border-t border-slate-50">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="editActive" name="is_active">
-                        <div class="toggle-bg"></div>
-                        <span id="newsStatusLabel" class="ml-3 font-bold text-slate-600 text-sm">Active</span>
-                    </label>
-                    <button type="submit" class="btn-primary h-10">Update News Item</button>
+                        class="input-field w-full h-48 py-3 resize-none custom-scrollbar"></textarea>
                 </div>
             </form>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="editActive" name="is_active">
+                    <div class="toggle-bg"></div>
+                    <span id="newsStatusLabel" class="ml-3 font-bold text-slate-600 text-sm">Active</span>
+                </label>
+
+                <button type="submit" form="editForm" class="btn-primary h-10">
+                    Update Profile
+                </button>
+            </div>
         </div>
     </div>
 @endsection

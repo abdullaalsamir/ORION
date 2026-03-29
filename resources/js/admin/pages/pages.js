@@ -4,12 +4,14 @@ import ace from 'ace-builds/src-noconflict/ace';
 export function initPagesPage() {
     const modal = document.getElementById('pageModal');
     if (!modal || !window.location.pathname.includes('/admin/pages')) return;
+    
     const editor = ace.edit("ace-editor");
     editor.session.setMode("ace/mode/html");
     editor.setTheme("ace/theme/github");
     editor.session.setUseWrapMode(true);
     editor.setOption("wrap", true);
     editor.setShowPrintMargin(false);
+    
     const applyFormatting = (type) => {
         const selectedText = editor.getSelectedText();
         const toggleTag = (text, tagName) => {
@@ -44,8 +46,10 @@ export function initPagesPage() {
         }
         editor.focus();
     };
+    
     document.querySelectorAll('#editor-toolbar button').forEach(btn => btn.onclick = () => applyFormatting(btn.dataset.format));
     let curPageId = null;
+    
     document.querySelectorAll('.edit-page').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
@@ -62,14 +66,17 @@ export function initPagesPage() {
                         <span class="text-[11px] font-bold text-rose-300 uppercase">No Banners Found</span>
                     </div>
                 `;
+                
                 images.forEach(img => {
                     const div = document.createElement('div');
-                    div.className = "shrink-0 w-full h-auto rounded-xl overflow-hidden border-1 border-transparent hover:border-admin-blue cursor-pointer transition-all duration-300";
-                    div.innerHTML = `<img src="${img.url}" class="w-full h-full object-cover">`;
+                    div.className = "shrink-0 w-full h-auto rounded-xl overflow-hidden border-1 border-transparent hover:border-admin-blue cursor-pointer transition-all duration-300 relative shimmer bg-slate-100";
+                    
+                    const imgSrc = img.thumb_url || img.url;
+                    div.innerHTML = `<img src="${imgSrc}" class="w-full h-full object-cover opacity-0 transition-opacity duration-300" onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('shimmer')">`;
+                    
                     div.onclick = () => { 
                         const widthAttr = img.width ? ` width="${img.width}"` : '';
                         const heightAttr = img.height ? ` height="${img.height}"` : '';
-                         
                         const aspectStyle = (img.width && img.height) ? ` style="aspect-ratio: ${img.width} / ${img.height};"` : '';
                          
                         const htmlString = `<div class="banner rounded-xl shimmer">\n  <img src="${img.url}"${widthAttr}${heightAttr}${aspectStyle} alt="${btn.dataset.name}" class="w-full h-auto block rounded-xl object-cover" onload="this.parentElement.classList.remove('shimmer')">\n</div>\n`;
@@ -80,12 +87,16 @@ export function initPagesPage() {
                     strip.appendChild(div);
                 });
             });
-            const dec = document.createElement('textarea'); dec.innerHTML = btn.dataset.content || '';
+            
+            const dec = document.createElement('textarea'); 
+            dec.innerHTML = btn.dataset.content || '';
             editor.setValue(dec.value, -1);
+            
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.add('active'); editor.resize(); }, 10);
         };
     });
+    
     const save = document.getElementById('savePage');
     if (save) save.onclick = () => {
         window.axios.put(`/admin/pages/${curPageId}`, { content: editor.getValue() })

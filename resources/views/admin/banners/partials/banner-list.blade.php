@@ -29,24 +29,28 @@
                         $ratioStr = round($calcRatio, 2) . ':1';
                     }
                 }
+
+                $baseName = str_replace('.webp', '', $banner->file_name);
+                $thumb700 = dirname($banner->file_path) . '/thumbs/' . $baseName . '-700.webp';
             @endphp
 
             <div
                 class="relative group rounded-2xl border border-slate-200 bg-white p-1 hover:border-admin-blue transition-all">
                 <div class="rounded-xl overflow-hidden bg-slate-100 relative shimmer">
-                    <img src="{{ asset('storage/' . $banner->file_path) }}?v={{ time() }}"
+                    <img src="{{ asset('storage/' . $thumb700) }}?v={{ time() }}"
                         width="{{ is_numeric($actualWidth) ? $actualWidth : '' }}"
                         height="{{ is_numeric($actualHeight) ? $actualHeight : '' }}"
-                        class="w-full h-full object-cover transition-all duration-500 {{ !$banner->is_active ? 'opacity-40 grayscale' : '' }}"
-                        alt="banner" onload="this.parentElement.classList.remove('shimmer')">
+                        class="w-full h-full object-cover opacity-0 transition-opacity duration-500 {{ !$banner->is_active ? 'grayscale opacity-40!' : '' }}"
+                        alt="banner"
+                        onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('shimmer')">
 
                     @if(!$banner->is_active)
-                        <div class="absolute inset-0 flex items-center justify-center z-10">
+                        <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                             <span class="badge badge-danger bg-red-600! text-white! border-none!">Inactive</span>
                         </div>
                     @endif
 
-                    <div class="absolute bottom-3 left-3 flex flex-col items-start gap-1 z-20">
+                    <div class="absolute bottom-3 left-3 flex flex-col items-start gap-1 z-20 pointer-events-none">
                         <span
                             class="bg-slate-900/50 backdrop-blur text-white text-[11px] px-2 py-1 rounded-md tracking-wider">
                             Ratio: {{ $ratioStr }}
@@ -62,7 +66,7 @@
                     class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-30">
                     <button
                         class="w-8 h-8 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center text-xs text-slate-600 hover:text-white hover:bg-admin-blue transition-all cursor-pointer"
-                        onclick="openBannerEditModal({{ $banner->id }}, '{{ $banner->file_path }}', {{ $banner->is_active }})">
+                        onclick="openBannerEditModal({{ $banner->id }}, '{{ $thumb700 }}', {{ $banner->is_active }})">
                         <i class="fas fa-pencil"></i>
                     </button>
                     <button

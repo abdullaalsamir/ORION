@@ -13,7 +13,9 @@ class BannerController extends Controller
 {
     public function index()
     {
-        $leafMenus = Menu::getFunctionalLeafMenus();
+        $leafMenus = Menu::getFunctionalLeafMenus()
+            ->whereNotIn('slug', ['csr', 'career', 'photo-gallery']);
+
         return view('admin.banners.index', compact('leafMenus'));
     }
 
@@ -35,17 +37,28 @@ class BannerController extends Controller
 
         try {
             $file = $request->file('image');
-            $fileName = time() . '.webp';
+            $baseName = time();
+            $fileName = $baseName . '.webp';
             $relativeDir = "banners/{$menu->full_slug}";
+            $thumbDir = "{$relativeDir}/thumbs";
 
-            if (!Storage::disk('public')->exists($relativeDir))
+            if (!Storage::disk('public')->exists($relativeDir)) {
                 Storage::disk('public')->makeDirectory($relativeDir);
+            }
+            if (!Storage::disk('public')->exists($thumbDir)) {
+                Storage::disk('public')->makeDirectory($thumbDir);
+            }
 
             $fullPath = storage_path("app/public/{$relativeDir}/{$fileName}");
+            $thumb700Path = storage_path("app/public/{$thumbDir}/{$baseName}-700.webp");
+            $thumb250Path = storage_path("app/public/{$thumbDir}/{$baseName}-250.webp");
+
             $ratios = [48 / 9, 23 / 9, 16 / 9];
             $targetRatio = $ratios[$request->ratio];
 
             list($finalWidth, $finalHeight) = $this->processBanner($file->getRealPath(), $fullPath, $targetRatio, $request->max_width);
+            $this->processBanner($file->getRealPath(), $thumb700Path, $targetRatio, 700);
+            $this->processBanner($file->getRealPath(), $thumb250Path, $targetRatio, 250);
 
             Banner::create([
                 'menu_id' => $menu->id,
@@ -142,7 +155,20 @@ class BannerController extends Controller
 
     public function delete(Banner $banner)
     {
-        Storage::disk('public')->delete($banner->file_path);
+        if (Storage::disk('public')->exists($banner->file_path)) {
+            Storage::disk('public')->delete($banner->file_path);
+        }
+
+        $baseName = str_replace('.webp', '', $banner->file_name);
+        $thumbDir = dirname($banner->file_path) . '/thumbs';
+
+        if (Storage::disk('public')->exists("{$thumbDir}/{$baseName}-700.webp")) {
+            Storage::disk('public')->delete("{$thumbDir}/{$baseName}-700.webp");
+        }
+        if (Storage::disk('public')->exists("{$thumbDir}/{$baseName}-250.webp")) {
+            Storage::disk('public')->delete("{$thumbDir}/{$baseName}-250.webp");
+        }
+
         $banner->delete();
         return response()->json(['success' => true]);
     }
@@ -152,8 +178,12 @@ class BannerController extends Controller
         $banners = $menu->banners()->where('is_active', 1)->orderBy('created_at', 'asc')->get();
 
         return response()->json($banners->map(function ($banner) {
+            $baseName = str_replace('.webp', '', $banner->file_name);
+            $thumbDir = dirname($banner->file_path) . '/thumbs';
+
             return [
                 'url' => asset('storage/' . $banner->file_path),
+                'thumb_url' => asset('storage/' . $thumbDir . '/' . $baseName . '-250.webp'),
                 'name' => $banner->file_name,
                 'width' => $banner->image_width,
                 'height' => $banner->image_height

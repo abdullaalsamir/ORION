@@ -6,17 +6,8 @@
 @section('meta_image', asset('logo.svg'))
 
 @section('content')
-    <div>
-        <p class="text-slate-500 text-base text-justify">
-            At Orion, we are committed to initiatives that contribute to a better and more sustainable world. Corporate
-            Social Responsibility (CSR) is therefore a core focus of our operations. Through our CSR initiatives, we aim to
-            respond to social needs, promote environmental sustainability, uphold ethical labor practices and fair trade
-            principles, and actively participate in philanthropy and community engagement. As a socially responsible
-            business conglomerate, we prioritize these values and integrate them into every aspect of our organization.
-        </p>
-    </div>
 
-    <div class="mt-8">
+    <div class="{{ empty($menu->content) ? 'mt-0' : 'mt-8' }}">
 
         <div id="main-smooth-wrapper" class="smooth-container">
             <div id="csr-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
@@ -33,10 +24,12 @@
                             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3">
                                 {{ $item->csr_date->format('d F, Y') }}
                             </span>
+
                             <h3
-                                class="text-xl font-semibold text-slate-900 capitalize group-hover:text-orion-blue transition-all duraion-300 line-clamp-3 mb-3">
+                                class="text-xl font-semibold text-slate-900 capitalize group-hover:text-orion-blue transition-all duration-300 line-clamp-3 mb-3">
                                 {{ $item->title }}
                             </h3>
+
                             <span class="text-slate-500 text-base leading-relaxed line-clamp-3">
                                 {!! $item->description !!}
                             </span>
@@ -44,10 +37,12 @@
                     </a>
                 @endforeach
             </div>
+
             <div>
                 {{ $items->links() }}
             </div>
         </div>
 
     </div>
+
 @endsection

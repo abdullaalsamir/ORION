@@ -89,13 +89,22 @@
         <div class="lg:col-span-4">
             <div class="sticky top-27.5 space-y-6">
                 <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                    <div class="aspect-square w-full">
+                    <div class="aspect-square w-full relative map-wrapper">
                         @if($footer->map_url)
-                            <iframe src="{{ $footer->map_url }}" class="w-full h-full border-0" allowfullscreen loading="lazy">
-                            </iframe>
-                        @else
+
                             <div
-                                class="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 italic text-sm">
+                                class="map-loader absolute inset-0 flex items-center justify-center bg-white transition-opacity duration-500">
+                                <div class="h-60 flex items-center justify-center">
+                                    <x-map-loader />
+                                </div>
+                            </div>
+
+                            <iframe data-src="{{ $footer->map_url }}" width="100%" height="100%" style="border:0;"
+                                class="map-frame opacity-0 transition-opacity duration-700" loading="lazy">
+                            </iframe>
+
+                        @else
+                            <div class="w-full h-full bg-stone-100 flex items-center justify-center text-slate-500 text-sm">
                                 Map not configured
                             </div>
                         @endif

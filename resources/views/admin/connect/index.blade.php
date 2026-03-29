@@ -9,8 +9,12 @@
                 <p class="text-xs text-slate-400">Monitor and manage messeages from users</p>
             </div>
             <div>
-                <span class="text-xs font-semibold text-slate-400 tracking-wide">Total Received:
-                    {{ $groupedQueries->flatten()->count() }}</span>
+                <span class="text-xs font-semibold text-amber-500 tracking-wide">
+                    Total Received:
+                </span>
+                <span class="text-xs font-semibold text-red-500">
+                    {{ $groupedQueries->flatten()->count() }}
+                </span>
             </div>
         </div>
 

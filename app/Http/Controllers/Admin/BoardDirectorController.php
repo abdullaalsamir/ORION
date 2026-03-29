@@ -32,10 +32,18 @@ class BoardDirectorController extends Controller
             $fileName = $slug . '.webp';
             $path = "directors/{$fileName}";
 
-            if (!Storage::disk('public')->exists('directors'))
+            if (!Storage::disk('public')->exists('directors')) {
                 Storage::disk('public')->makeDirectory('directors');
+            }
+            if (!Storage::disk('public')->exists('directors/thumbs')) {
+                Storage::disk('public')->makeDirectory('directors/thumbs');
+            }
 
-            $this->processDirectorImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
+            $mainPath = storage_path("app/public/{$path}");
+            $thumbPath = storage_path("app/public/directors/thumbs/{$fileName}");
+
+            $this->processDirectorImage($request->file('image')->getRealPath(), $mainPath, 1000);
+            $this->processDirectorImage($request->file('image')->getRealPath(), $thumbPath, 100);
 
             BoardDirector::create([
                 'name' => $request->name,
@@ -65,17 +73,35 @@ class BoardDirectorController extends Controller
 
         try {
             $slug = $boardDirector->slug;
-            if ($request->name !== $boardDirector->name)
+            if ($request->name !== $boardDirector->name) {
                 $slug = $this->generateUniqueSlug($request->name, $boardDirector->id);
+            }
 
             $data = ['name' => $request->name, 'slug' => $slug, 'designation' => $request->designation, 'description' => $request->description, 'is_active' => $request->is_active];
 
             if ($request->hasFile('image')) {
-                if (Storage::disk('public')->exists($boardDirector->image_path))
+                if (Storage::disk('public')->exists($boardDirector->image_path)) {
                     Storage::disk('public')->delete($boardDirector->image_path);
+                    Storage::disk('public')->delete('directors/thumbs/' . basename($boardDirector->image_path));
+                }
+
+                if (!Storage::disk('public')->exists('directors')) {
+                    Storage::disk('public')->makeDirectory('directors');
+                }
+                if (!Storage::disk('public')->exists('directors/thumbs')) {
+                    Storage::disk('public')->makeDirectory('directors/thumbs');
+                }
+
                 $path = "directors/{$slug}.webp";
-                $this->processDirectorImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
+                $mainPath = storage_path("app/public/{$path}");
+                $thumbPath = storage_path("app/public/directors/thumbs/{$slug}.webp");
+
+                $this->processDirectorImage($request->file('image')->getRealPath(), $mainPath, 1000);
+                $this->processDirectorImage($request->file('image')->getRealPath(), $thumbPath, 100);
+
                 $data['image_path'] = $path;
+
+                $boardDirector->touch();
             }
 
             $boardDirector->update($data);
@@ -97,7 +123,7 @@ class BoardDirectorController extends Controller
         return $slug;
     }
 
-    private function processDirectorImage($sourcePath, $destinationPath)
+    private function processDirectorImage($sourcePath, $destinationPath, $maxWidth = 1000)
     {
         ini_set('memory_limit', '1024M');
         if (!extension_loaded('gd'))
@@ -110,6 +136,7 @@ class BoardDirectorController extends Controller
         $width = $info[0];
         $height = $info[1];
         $type = $info[2];
+
         switch ($type) {
             case IMAGETYPE_JPEG:
                 $src = imagecreatefromjpeg($sourcePath);
@@ -130,6 +157,7 @@ class BoardDirectorController extends Controller
 
         $targetRatio = 3 / 4;
         $currentRatio = $width / $height;
+
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -143,32 +171,41 @@ class BoardDirectorController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 1000)
-            $finalWidth = 1000;
+        if ($finalWidth > $maxWidth) {
+            $finalWidth = $maxWidth;
+        }
+
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
-        if (!imagewebp($dst, $destinationPath, 70))
+
+        if (!imagewebp($dst, $destinationPath, 70)) {
             throw new Exception('Failed to save WebP image.');
+        }
+
         imagedestroy($src);
         imagedestroy($dst);
     }
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->orders as $item)
+        foreach ($request->orders as $item) {
             BoardDirector::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
         return response()->json(['success' => true]);
     }
 
     public function delete(BoardDirector $boardDirector)
     {
         try {
-            if (Storage::disk('public')->exists($boardDirector->image_path))
+            if (Storage::disk('public')->exists($boardDirector->image_path)) {
                 Storage::disk('public')->delete($boardDirector->image_path);
+                Storage::disk('public')->delete('directors/thumbs/' . basename($boardDirector->image_path));
+            }
+
             $boardDirector->delete();
             return response()->json(['success' => true]);
         } catch (Exception $e) {

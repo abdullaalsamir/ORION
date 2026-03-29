@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
 use App\Models\Career;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -172,8 +173,8 @@ class CareerController extends Controller
 
     public function careerIndex()
     {
-        $jobs = Career::where('is_active', 1)->orderBy('order')->get();
-        $menu = (object) ['name' => 'Career', 'content' => null];
+        $jobs = Career::where('is_active', 1)->orderBy('order', 'desc')->get();
+        $menu = Menu::where('slug', 'career')->first();
         return view('career.index', compact('jobs', 'menu'));
     }
 

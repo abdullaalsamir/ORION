@@ -18,7 +18,7 @@
                         onclick="loadBanners({{ $menu->id }}, this)">
                         <div class="flex items-center gap-3">
                             <div
-                                class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-admin-blue transition-colors">
+                                class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-admin-blue group-[.active]:text-admin-blue transition-colors">
                                 <i class="fas fa-image text-sm"></i>
                             </div>
                             <div class="flex flex-col">

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSwiperGap(swiper) {
         const mainHeight = mainEl.offsetHeight
         const thumbWidth = thumbsEl.offsetWidth
-        const thumbHeight = thumbWidth * (4 / 10)
+        const thumbHeight = thumbWidth * (9 / 20)
 
         let gap = Math.floor((mainHeight - (thumbHeight * VISIBLE_THUMBS)) / (VISIBLE_THUMBS - 1))
         gap = Math.max(0, gap)

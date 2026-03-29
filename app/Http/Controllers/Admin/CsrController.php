@@ -47,12 +47,21 @@ class CsrController extends Controller
 
         try {
             $slug = $this->generateUniqueSlug($request->title);
-            $path = "csr/{$slug}.webp";
+            $fileName = $slug . '.webp';
+            $path = "csr/{$fileName}";
 
-            if (!Storage::disk('public')->exists('csr'))
+            if (!Storage::disk('public')->exists('csr')) {
                 Storage::disk('public')->makeDirectory('csr');
+            }
+            if (!Storage::disk('public')->exists('csr/thumbs')) {
+                Storage::disk('public')->makeDirectory('csr/thumbs');
+            }
 
-            $this->processCsrImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
+            $mainPath = storage_path("app/public/{$path}");
+            $thumbPath = storage_path("app/public/csr/thumbs/{$fileName}");
+
+            $this->processCsrImage($request->file('image')->getRealPath(), $mainPath, 2000);
+            $this->processCsrImage($request->file('image')->getRealPath(), $thumbPath, 200);
 
             CsrItem::create([
                 'title' => $request->title,
@@ -82,17 +91,35 @@ class CsrController extends Controller
 
         try {
             $slug = $csrItem->slug;
-            if ($request->title !== $csrItem->title)
+            if ($request->title !== $csrItem->title) {
                 $slug = $this->generateUniqueSlug($request->title, $csrItem->id);
+            }
 
             $data = ['title' => $request->title, 'slug' => $slug, 'description' => $request->description, 'csr_date' => $request->csr_date, 'is_active' => $request->is_active];
 
             if ($request->hasFile('image')) {
-                if (Storage::disk('public')->exists($csrItem->image_path))
+                if (Storage::disk('public')->exists($csrItem->image_path)) {
                     Storage::disk('public')->delete($csrItem->image_path);
+                    Storage::disk('public')->delete('csr/thumbs/' . basename($csrItem->image_path));
+                }
+
+                if (!Storage::disk('public')->exists('csr')) {
+                    Storage::disk('public')->makeDirectory('csr');
+                }
+                if (!Storage::disk('public')->exists('csr/thumbs')) {
+                    Storage::disk('public')->makeDirectory('csr/thumbs');
+                }
+
                 $path = "csr/{$slug}.webp";
-                $this->processCsrImage($request->file('image')->getRealPath(), storage_path("app/public/{$path}"));
+                $mainPath = storage_path("app/public/{$path}");
+                $thumbPath = storage_path("app/public/csr/thumbs/{$slug}.webp");
+
+                $this->processCsrImage($request->file('image')->getRealPath(), $mainPath, 2000);
+                $this->processCsrImage($request->file('image')->getRealPath(), $thumbPath, 200);
+
                 $data['image_path'] = $path;
+
+                $csrItem->touch();
             }
 
             $csrItem->update($data);
@@ -102,7 +129,7 @@ class CsrController extends Controller
         }
     }
 
-    private function processCsrImage($sourcePath, $destinationPath)
+    private function processCsrImage($sourcePath, $destinationPath, $maxWidth = 2000)
     {
         ini_set('memory_limit', '1024M');
         if (!extension_loaded('gd'))
@@ -115,6 +142,7 @@ class CsrController extends Controller
         $width = $info[0];
         $height = $info[1];
         $type = $info[2];
+
         switch ($type) {
             case IMAGETYPE_JPEG:
                 $src = imagecreatefromjpeg($sourcePath);
@@ -135,6 +163,7 @@ class CsrController extends Controller
 
         $targetRatio = 16 / 9;
         $currentRatio = $width / $height;
+
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -148,8 +177,10 @@ class CsrController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 2000)
-            $finalWidth = 2000;
+        if ($finalWidth > $maxWidth) {
+            $finalWidth = $maxWidth;
+        }
+
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
@@ -157,24 +188,30 @@ class CsrController extends Controller
         imagesavealpha($dst, true);
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
 
-        if (!imagewebp($dst, $destinationPath, 70))
+        if (!imagewebp($dst, $destinationPath, 70)) {
             throw new Exception('Failed to save WebP image.');
+        }
+
         imagedestroy($src);
         imagedestroy($dst);
     }
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->orders as $item)
+        foreach ($request->orders as $item) {
             CsrItem::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
         return response()->json(['success' => true]);
     }
 
     public function delete(CsrItem $csrItem)
     {
         try {
-            if (Storage::disk('public')->exists($csrItem->image_path))
+            if (Storage::disk('public')->exists($csrItem->image_path)) {
                 Storage::disk('public')->delete($csrItem->image_path);
+                Storage::disk('public')->delete('csr/thumbs/' . basename($csrItem->image_path));
+            }
+
             $csrItem->delete();
             return response()->json(['success' => true]);
         } catch (Exception $e) {
@@ -184,7 +221,7 @@ class CsrController extends Controller
 
     public function frontendIndex($menu)
     {
-        $items = CsrItem::where('is_active', 1)->orderBy('csr_date', 'desc')->orderBy('order', 'desc')->paginate(9);
+        $items = CsrItem::where('is_active', 1)->orderBy('csr_date', 'desc')->orderBy('order', 'asc')->paginate(9);
         return view('csr.index', compact('items', 'menu'));
     }
 

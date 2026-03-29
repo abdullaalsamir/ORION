@@ -70,17 +70,48 @@ export function initBannersPage() {
             mwError.classList.add('hidden');
         }
 
+        const btn = this.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
+        }
+
         window.axios.post(`/admin/banners/upload/${window.currentMenuId}`, new FormData(this))
-            .then(() => { window.closeModal('uploadModal'); window.loadBanners(window.currentMenuId, document.querySelector('.leaf-menu-item.active')); });
+            .then(() => { 
+                window.closeModal('uploadModal'); 
+                window.loadBanners(window.currentMenuId, document.querySelector('.leaf-menu-item.active')); 
+            })
+            .finally(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Upload Banner';
+                }
+            });
     };
 
     document.getElementById('editForm').onsubmit = function(e) {
         e.preventDefault();
+
+        const btn = document.getElementById('editSubmit') || this.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+        }
+
         const fd = new FormData(this);
         fd.append('is_active', document.getElementById('editActiveToggle').checked ? 1 : 0);
         
         window.axios.post(`/admin/banners/${window.currentBannerId}`, fd)
-            .then(() => { window.closeModal('editModal'); window.loadBanners(window.currentMenuId, document.querySelector('.leaf-menu-item.active')); });
+            .then(() => { 
+                window.closeModal('editModal'); 
+                window.loadBanners(window.currentMenuId, document.querySelector('.leaf-menu-item.active')); 
+            })
+            .finally(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Update Banner';
+                }
+            });
     };
 
     window.deleteBannerImage = (id) => {

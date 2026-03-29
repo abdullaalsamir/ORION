@@ -40,19 +40,19 @@
 
                     <div class="p-6 space-y-6">
                         <div>
-                            <label class="text-[10px] font-black text-admin-blue uppercase tracking-widest mb-1 block">
+                            <label class="text-sm font-bold text-admin-blue uppercase tracking-widest mb-1 block">
                                 Company Name
                             </label>
-                            <div class="text-xs text-slate-500 font-medium space-y-1">
+                            <div class="text-sm text-slate-500 font-medium space-y-1">
                                 {{ $footer->company ?: '' }}
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-[10px] font-black text-admin-blue uppercase tracking-widest mb-1 block">
+                            <label class="text-sm font-bold text-admin-blue uppercase tracking-widest mb-1 block">
                                 Address
                             </label>
-                            <div class="text-xs text-slate-500 font-medium space-y-1">
+                            <div class="text-sm text-slate-500 font-medium space-y-1">
                                 <p>{{ $footer->address_1 ?: '' }}</p>
                                 <p>{{ $footer->address_2 ?: '' }}</p>
                                 <p>{{ $footer->address_3 ?: '' }}</p>
@@ -60,27 +60,27 @@
                         </div>
 
                         <div>
-                            <label class="text-[10px] font-black text-admin-blue uppercase tracking-widest mb-1 block">
+                            <label class="text-sm font-bold text-admin-blue uppercase tracking-widest mb-1 block">
                                 Phone
                             </label>
-                            <div class="text-xs text-slate-500 font-medium space-y-1">
+                            <div class="text-sm text-slate-500 font-medium space-y-1">
                                 <p>{{ $footer->phone_1 ?: '' }}</p>
                                 <p>{{ $footer->phone_2 ?: '' }}</p>
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-[10px] font-black text-admin-blue uppercase tracking-widest mb-1 block">
+                            <label class="text-sm font-bold text-admin-blue uppercase tracking-widest mb-1 block">
                                 Fax
                             </label>
-                            <p class="text-xs text-slate-500 font-medium">{{ $footer->fax ?: '' }}</p>
+                            <p class="text-sm text-slate-500 font-medium space-y-1">{{ $footer->fax ?: '' }}</p>
                         </div>
 
                         <div>
-                            <label class="text-[10px] font-black text-admin-blue uppercase tracking-widest mb-1 block">
+                            <label class="text-sm font-bold text-admin-blue uppercase tracking-widest mb-1 block">
                                 Email
                             </label>
-                            <p class="text-xs text-slate-500 font-medium">{{ $footer->email ?: '' }}</p>
+                            <p class="text-sm text-slate-500 font-medium space-y-1">{{ $footer->email ?: '' }}</p>
                         </div>
                     </div>
                 </div>
@@ -94,9 +94,17 @@
                     </div>
 
                     <div class="p-4 flex-1">
-                        <div class="w-full h-full min-h-75 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 relative">
+                        <div class="w-full h-full min-h-75 rounded-2xl overflow-hidden border border-slate-200 relative map-wrapper">
                             @if ($footer->map_url)
-                                <iframe src="{{ $footer->map_url }}" class="w-full h-full" style="border:0;"></iframe>
+                                
+                                <div class="map-loader absolute inset-0 flex items-center justify-center transition-opacity duration-500 z-10">
+                                    <div class="h-60 flex items-center justify-center">
+                                        <x-map-loader />
+                                    </div>
+                                </div>
+
+                                <iframe data-src="{{ $footer->map_url }}" class="map-frame w-full h-full opacity-0 transition-opacity duration-700 relative z-0" style="border:0;" loading="lazy"></iframe>
+                            
                             @else
                                 <div class="absolute inset-0 flex items-center justify-center text-slate-300 text-xs">
                                     No Map URL Configured
@@ -125,9 +133,6 @@
                                     if ($link['menu_id'] === 'sitemap') {
                                         $m = (object)['name' => 'Sitemap'];
                                         $isSpecial = true;
-                                    } elseif ($link['menu_id'] === 'career') {
-                                        $m = (object)['name' => 'Career'];
-                                        $isSpecial = true;
                                     } else {
                                         $m = $allActiveMenus->firstWhere('id', $link['menu_id']);
                                     }
@@ -136,8 +141,8 @@
 
                             <div class="flex items-center justify-between p-3.5 rounded-2xl border {{ $m ? 'border-emerald-100 bg-emerald-50/40' : 'border-slate-100 bg-slate-50/50' }} transition-all">
                                 <div class="flex items-center gap-4">
-                                    <span class="text-[10px] font-black text-slate-300">{{ $i + 1 }}</span>
-                                    <span class="text-xs font-bold {{ $m ? ($isSpecial ? 'text-orion-blue' : 'text-emerald-700') : 'text-slate-300' }}">
+                                    <span class="text-xs font-bold text-slate-300">{{ $i + 1 }}</span>
+                                    <span class="text-sm font-semibold {{ $m ? ($isSpecial ? 'text-orion-blue' : 'text-emerald-700') : 'text-slate-300' }}">
                                         {{ $m ? $m->name : '' }}
                                     </span>
                                 </div>
@@ -156,10 +161,10 @@
 
                     <div class="p-6 space-y-6">
                         <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase mb-2 block">
+                            <label class="text-sm font-semibold text-slate-500 uppercase mb-2 block">
                                 Description
                             </label>
-                            <p class="text-xs text-slate-500">
+                            <p class="text-sm text-slate-500">
                                 {{ $footer->follow_us_desc ?: '' }}
                             </p>
                         </div>
@@ -172,10 +177,10 @@
                                     </div>
 
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[9px] font-black text-slate-300 uppercase tracking-tighter">
+                                        <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">
                                             {{ $social['platform'] }}
                                         </div>
-                                        <div class="text-[11px] font-bold truncate {{ $social['url'] ? 'text-admin-blue' : 'text-red-200' }}">
+                                        <div class="text-sm font-semibold truncate {{ $social['url'] ? 'text-admin-blue' : 'text-rose-300' }}">
                                             {{ $social['url'] ?: 'No link set' }}
                                         </div>
                                     </div>

@@ -13,11 +13,11 @@
 
             <div class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar bg-slate-50/30">
                 @foreach($leafMenus as $menu)
-                    <div class="leaf-menu-item p-3.5 bg-white border border-slate-200 rounded-2xl hover:border-admin-blue/50 cursor-pointer transition-all group"
+                    <div class="leaf-menu-item p-3.5 bg-white border border-slate-200 rounded-2xl hover:border-admin-blue/50 [&.active]:border-admin-blue/50 cursor-pointer transition-all group"
                         data-id="{{ $menu->id }}" onclick="loadConcern({{ $menu->id }}, this)">
                         <div class="flex items-center gap-3">
                             <div
-                                class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-admin-blue transition-colors">
+                                class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-admin-blue group-[.active]:text-admin-blue transition-colors">
                                 <i class="fas fa-building text-sm"></i>
                             </div>
                             <div class="flex flex-col">

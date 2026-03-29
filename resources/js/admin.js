@@ -1,4 +1,5 @@
 import './bootstrap';
+import './ui/mapLoader';
 
 import * as Turbo from "@hotwired/turbo";
 

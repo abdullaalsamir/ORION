@@ -1,4 +1,9 @@
 @if($menu->slug === 'home') @php return; @endphp @endif
+@php
+    $restrictedSlugs = ['businesses', 'photo-gallery'];
+    $isRestrictedTree = $isRestrictedTree ?? false;
+    $isRestrictedTree = $isRestrictedTree || in_array($menu->slug, $restrictedSlugs);
+@endphp
 
 <li data-id="{{ $menu->id }}" class="sortable-item tree-item group">
     <div
@@ -19,7 +24,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            @if($menu->children->isEmpty())
+            @if($menu->children->isEmpty() && !$isRestrictedTree)
                 @if(!$menu->is_multifunctional)
                     @if(empty($menu->content))
                         <span class="badge badge-danger text-[9px]!">No Content</span>
@@ -32,8 +37,19 @@
             @endif
 
             <div class="flex items-center border-l pl-4 border-slate-100 space-x-1">
-                @if($menu->children->isEmpty())
-                    @if($menu->is_multifunctional)
+                @if($menu->children->isEmpty() && !$isRestrictedTree)
+
+                    @if(in_array($menu->slug, ['csr', 'career']))
+                        <a href="{{ url('admin/' . $menu->slug) }}" class="btn-icon w-8 p-1.5! text-admin-blue"
+                            title="Go to module">
+                            <i class="fas fa-external-link-alt text-xs"></i>
+                        </a>
+
+                        <button type="button" class="btn-icon edit-page w-8 p-1.5!" data-id="{{ $menu->id }}"
+                            data-name="{{ $menu->name }}" data-content="{{ e($menu->content) }}">
+                            <i class="fas fa-pencil text-xs"></i>
+                        </button>
+                    @elseif($menu->is_multifunctional)
                         <a href="{{ url('admin/' . $menu->slug) }}" class="btn-icon w-8 p-1.5! text-admin-blue"
                             title="Go to module">
                             <i class="fas fa-external-link-alt text-xs"></i>
@@ -44,6 +60,7 @@
                             <i class="fas fa-pencil text-xs"></i>
                         </button>
                     @endif
+
                 @else
                     <div class="w-8"></div>
                 @endif
@@ -54,8 +71,9 @@
     @if($menu->children->count())
         <ul id="children-{{ $menu->id }}" class="menu-sortable-list tree-list hidden">
             @foreach($menu->children as $child)
-                @include('admin.pages.partials.page-item', ['menu' => $child])
+                @include('admin.pages.partials.page-item', ['menu' => $child, 'isRestrictedTree' => $isRestrictedTree])
             @endforeach
         </ul>
     @endif
+
 </li>

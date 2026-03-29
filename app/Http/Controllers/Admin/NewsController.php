@@ -15,7 +15,9 @@ class NewsController extends Controller
     public function index()
     {
         $menu = Menu::where('slug', 'news-and-announcements')->firstOrFail();
-        $groupedNews = NewsItem::orderBy('news_date', 'desc')->orderBy('order', 'desc')->get()
+        $groupedNews = NewsItem::orderBy('news_date', 'desc')
+            ->orderBy('order', 'desc')
+            ->get()
             ->groupBy(fn($item) => Carbon::parse($item->news_date)->format('Y-m-d'));
         return view('admin.news-and-announcements.index', compact('menu', 'groupedNews'));
     }
@@ -52,14 +54,26 @@ class NewsController extends Controller
             } elseif (str_starts_with($mime, 'image/')) {
                 $fileType = 'image';
                 $ext = 'webp';
-            } else
+            } else {
                 abort(422, 'Unsupported file type');
+            }
 
             $path = "news/{$slug}.{$ext}";
-            Storage::disk('public')->makeDirectory('news');
+
+            if (!Storage::disk('public')->exists('news')) {
+                Storage::disk('public')->makeDirectory('news');
+            }
 
             if ($fileType === 'image') {
-                $this->processNewsImage($file->getRealPath(), storage_path("app/public/{$path}"));
+                if (!Storage::disk('public')->exists('news/thumbs')) {
+                    Storage::disk('public')->makeDirectory('news/thumbs');
+                }
+
+                $mainPath = storage_path("app/public/{$path}");
+                $thumbPath = storage_path("app/public/news/thumbs/{$slug}.{$ext}");
+
+                $this->processNewsImage($file->getRealPath(), $mainPath, 2000);
+                $this->processNewsImage($file->getRealPath(), $thumbPath, 200);
             } else {
                 $file->storeAs('news', "{$slug}.{$ext}", 'public');
             }
@@ -94,8 +108,9 @@ class NewsController extends Controller
 
         try {
             $slug = $newsItem->slug;
-            if ($request->title !== $newsItem->title)
+            if ($request->title !== $newsItem->title) {
                 $slug = $this->generateUniqueSlug($request->title, $newsItem->id);
+            }
 
             $data = [
                 'title' => $request->title,
@@ -107,8 +122,12 @@ class NewsController extends Controller
             ];
 
             if ($request->hasFile('file')) {
-                if (Storage::disk('public')->exists($newsItem->file_path))
+                if (Storage::disk('public')->exists($newsItem->file_path)) {
                     Storage::disk('public')->delete($newsItem->file_path);
+                    if ($newsItem->file_type === 'image') {
+                        Storage::disk('public')->delete('news/thumbs/' . basename($newsItem->file_path));
+                    }
+                }
 
                 $file = $request->file('file');
                 $mime = $file->getMimeType();
@@ -119,15 +138,29 @@ class NewsController extends Controller
                 } elseif (str_starts_with($mime, 'image/')) {
                     $fileType = 'image';
                     $ext = 'webp';
-                } else
+                } else {
                     abort(422, 'Unsupported file type');
+                }
 
                 $path = "news/{$slug}.{$ext}";
 
-                if ($fileType === 'image')
-                    $this->processNewsImage($file->getRealPath(), storage_path("app/public/{$path}"));
-                else
+                if (!Storage::disk('public')->exists('news')) {
+                    Storage::disk('public')->makeDirectory('news');
+                }
+
+                if ($fileType === 'image') {
+                    if (!Storage::disk('public')->exists('news/thumbs')) {
+                        Storage::disk('public')->makeDirectory('news/thumbs');
+                    }
+
+                    $mainPath = storage_path("app/public/{$path}");
+                    $thumbPath = storage_path("app/public/news/thumbs/{$slug}.{$ext}");
+
+                    $this->processNewsImage($file->getRealPath(), $mainPath, 2000);
+                    $this->processNewsImage($file->getRealPath(), $thumbPath, 200);
+                } else {
                     $file->storeAs('news', "{$slug}.{$ext}", 'public');
+                }
 
                 $data['file_type'] = $fileType;
                 $data['file_path'] = $path;
@@ -138,10 +171,18 @@ class NewsController extends Controller
                 $oldPath = $newsItem->file_path;
                 $ext = pathinfo($oldPath, PATHINFO_EXTENSION);
                 $newPath = "news/{$slug}.{$ext}";
+
                 if (Storage::disk('public')->exists($oldPath)) {
                     Storage::disk('public')->move($oldPath, $newPath);
+                    if ($newsItem->file_type === 'image' && Storage::disk('public')->exists("news/thumbs/" . basename($oldPath))) {
+                        Storage::disk('public')->move("news/thumbs/" . basename($oldPath), "news/thumbs/" . basename($newPath));
+                    }
                     $data['file_path'] = $newPath;
                 }
+            }
+
+            if ($request->hasFile('file') || ($slug !== $oldSlug && !$request->hasFile('file'))) {
+                $newsItem->touch();
             }
 
             $newsItem->update($data);
@@ -151,7 +192,7 @@ class NewsController extends Controller
         }
     }
 
-    private function processNewsImage($sourcePath, $destinationPath)
+    private function processNewsImage($sourcePath, $destinationPath, $maxWidth = 2000)
     {
         ini_set('memory_limit', '1024M');
         if (!extension_loaded('gd'))
@@ -164,6 +205,7 @@ class NewsController extends Controller
         $width = $info[0];
         $height = $info[1];
         $type = $info[2];
+
         switch ($type) {
             case IMAGETYPE_JPEG:
                 $src = imagecreatefromjpeg($sourcePath);
@@ -184,6 +226,7 @@ class NewsController extends Controller
 
         $targetRatio = 16 / 9;
         $currentRatio = $width / $height;
+
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -197,32 +240,42 @@ class NewsController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 2000)
-            $finalWidth = 2000;
+        if ($finalWidth > $maxWidth) {
+            $finalWidth = $maxWidth;
+        }
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
-        if (!imagewebp($dst, $destinationPath, 70))
+
+        if (!imagewebp($dst, $destinationPath, 70)) {
             throw new Exception('Failed to save WebP image.');
+        }
+
         imagedestroy($src);
         imagedestroy($dst);
     }
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->orders as $item)
+        foreach ($request->orders as $item) {
             NewsItem::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
         return response()->json(['success' => true]);
     }
 
     public function delete(NewsItem $newsItem)
     {
         try {
-            if (Storage::disk('public')->exists($newsItem->file_path))
+            if (Storage::disk('public')->exists($newsItem->file_path)) {
                 Storage::disk('public')->delete($newsItem->file_path);
+                if ($newsItem->file_type === 'image') {
+                    Storage::disk('public')->delete('news/thumbs/' . basename($newsItem->file_path));
+                }
+            }
+
             $newsItem->delete();
             return response()->json(['success' => true]);
         } catch (Exception $e) {
@@ -233,7 +286,7 @@ class NewsController extends Controller
     public function frontendIndex($menu)
     {
         $pinned = NewsItem::where('is_active', 1)->where('is_pin', 1)->orderBy('news_date', 'desc')->orderBy('created_at', 'desc')->first();
-        $items = NewsItem::where('is_active', 1)->orderBy('news_date', 'desc')->orderBy('order', 'desc')->paginate(5);
+        $items = NewsItem::where('is_active', 1)->orderBy('news_date', 'desc')->orderBy('order', 'asc')->paginate(5);
         return view('news.index', compact('items', 'menu', 'pinned'));
     }
 

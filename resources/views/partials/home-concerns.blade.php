@@ -10,7 +10,7 @@
             <div class="flex gap-4">
 
                 <div class="flex-1 min-w-0">
-                    <div class="swiper homeConcernsMainSwiper w-full aspect-10/4 rounded-r-xl overflow-hidden relative">
+                    <div class="swiper homeConcernsMainSwiper w-full aspect-20/9 rounded-r-xl overflow-hidden relative">
                         <div class="swiper-wrapper">
                             
                             @foreach($groupedConcerns as $parentId => $group)
@@ -76,12 +76,16 @@
                                         $parentName = $parentMenu ? $parentMenu->name : $group->first()->menu->name;
                                     @endphp
 
-                                    <div class="swiper-slide w-full h-auto! aspect-10/4 cursor-pointer rounded-lg overflow-hidden relative shimmer transition-all duration-300 border-2 border-transparent">
+                                    <div class="swiper-slide w-full h-auto! aspect-20/9 cursor-pointer rounded-lg overflow-hidden relative shimmer transition-all duration-300 border-2 border-transparent">
                                         
                                         <div class="absolute inset-0 flex">
                                             @foreach($group as $index => $concern)
+                                                @php
+                                                    $coverBase = basename($concern->cover_photo_path, '.webp');
+                                                    $coverThumbPath = dirname($concern->cover_photo_path) . '/thumbs/' . $coverBase . '-200.webp';
+                                                @endphp
                                                 <div class="flex-1 h-full relative border-r border-white/20 last:border-r-0">
-                                                    <img src="{{ asset('storage/' . $concern->cover_photo_path) }}" class="w-full h-full object-cover" alt="strip" @if($index === 0) onload="this.closest('.shimmer')?.classList.remove('shimmer')" @endif>
+                                                    <img src="{{ asset('storage/' . $coverThumbPath) }}" class="w-full h-full object-cover" alt="strip" @if($index === 0) onload="this.closest('.shimmer')?.classList.remove('shimmer')" @endif>
                                                 </div>
                                             @endforeach
                                         </div>

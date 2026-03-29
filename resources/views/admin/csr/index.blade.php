@@ -22,14 +22,18 @@
                                 data-id="{{ $item->id }}">
 
                                 <div
-                                    class="drag-handle w-8 flex justify-center {{ count($items) > 1 ? 'cursor-grab active:cursor-grabbing text-slate-300 hover:text-admin-blue' : 'opacity-0 pointer-events-none' }}">
+                                    class="drag-handle w-8 flex justify-center {{ count($items) > 1 ? 'cursor-grab active:cursor-grabbing text-slate-300 hover:text-admin-blue transition-colors' : 'opacity-0 pointer-events-none' }}">
                                     <i class="fas fa-arrows-up-down-left-right"></i>
                                 </div>
 
                                 <div
-                                    class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2">
-                                    <img src="{{ asset('storage/' . $item->image_path) }}"
-                                        class="w-full h-full object-cover transition-all duration-500">
+                                    class="w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 relative">
+
+                                    <div class="absolute inset-0 shimmer" id="shimmer-{{ $item->id }}"></div>
+
+                                    <img src="{{ asset('storage/csr/thumbs/' . basename($item->image_path)) }}?v={{ $item->updated_at->timestamp }}"
+                                        class="w-full h-full object-cover transition-opacity duration-300 opacity-0 {{ !$item->is_active ? 'grayscale' : '' }}"
+                                        onload="this.classList.remove('opacity-0'); document.getElementById('shimmer-{{ $item->id }}').remove();">
                                 </div>
 
                                 <div class="flex-1 min-w-0 flex flex-col gap-0.5 ml-4 self-start">
@@ -38,7 +42,7 @@
                                     </span>
 
                                     <div class="text-[11px] text-slate-400 line-clamp-1 mt-1">
-                                        {!! $item->description !!}
+                                        {!! strip_tags($item->description) !!}
                                     </div>
 
                                     <div
@@ -55,8 +59,7 @@
                                 </div>
 
                                 <div class="flex items-center border-l pl-4 border-slate-100 space-x-1">
-                                    <button class="btn-icon w-8 p-1.5!"
-                                        onclick="openCsrEditModal({{ json_encode($item) }}, '{{ $menu->full_slug }}')">
+                                    <button class="btn-icon w-8 p-1.5!" onclick="openCsrEditModal({{ json_encode($item) }})">
                                         <i class="fas fa-pencil text-xs"></i>
                                     </button>
                                     <button class="btn-danger w-8 p-1.5!" onclick="deleteCsr({{ $item->id }})">
@@ -79,20 +82,23 @@
 
     <div id="addModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
-                <h1 class="mb-0!">Add CSR Item</h1>
-                <button type="button" onclick="closeModal('addModal')" class="btn-icon"><i
-                        class="fas fa-times text-xl"></i></button>
+
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
+                <h1 class="mb-0!">Add New CSR Item</h1>
+                <button type="button" onclick="closeModal('addModal')" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
 
-            <form action="{{ route('admin.csr.store') }}" method="POST" enctype="multipart/form-data"
-                class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
+            <form id="addForm" action="{{ route('admin.csr.store') }}" method="POST" enctype="multipart/form-data"
+                class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
+
                 <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Event Image (16:9)</label>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase mb-1 block ml-1">Event Image (16:9)</label>
                     <input type="file" name="image" id="addInput" accept="image/*" class="hidden"
                         onchange="handlePreview(this, 'addPreview')">
-                    <div class="aspect-video bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-admin-blue transition-all group"
+                    <div class="w-full aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-admin-blue transition-all group"
                         id="addPreview" onclick="document.getElementById('addInput').click()">
                         <i
                             class="fas fa-camera text-3xl text-slate-300 mb-2 group-hover:text-admin-blue transition-colors"></i>
@@ -117,37 +123,41 @@
                 <div class="relative flex flex-col gap-1">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description</label>
                     <textarea name="description" id="addDesc" required
-                        class="input-field w-full h-32 py-3 resize-none custom-scrollbar"></textarea>
-                </div>
-
-                <div class="flex justify-end pt-4 sticky bottom-0 bg-white border-t border-slate-50">
-                    <button type="submit" class="btn-success h-10">Save CSR Item</button>
+                        class="input-field w-full h-48 py-3 resize-none custom-scrollbar"></textarea>
                 </div>
             </form>
+
+            <div class="flex justify-end items-center border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <button type="submit" form="addForm" class="btn-success h-10">
+                    Save CSR Item
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="editModal" class="modal-overlay hidden">
         <div class="modal-content max-w-2xl! h-[90vh]! flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100 shrink-0">
+
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 shrink-0">
                 <h1 class="mb-0!">Edit CSR Item</h1>
-                <button onclick="closeModal('editModal')" class="btn-icon"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeModal('editModal')" class="btn-icon">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
 
-            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
+            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
                 <input type="file" name="image" id="editInput" accept="image/*" class="hidden"
                     onchange="handlePreview(this, 'editPreview')">
+
                 <div class="flex flex-col gap-1">
                     <label class="text-[11px] font-bold text-slate-400 uppercase mb-1 block ml-1">Change Image</label>
-                    <div class="relative group cursor-pointer aspect-video"
+                    <div class="relative group cursor-pointer w-full aspect-video"
                         onclick="document.getElementById('editInput').click()">
-                        <div class="w-full h-full bg-slate-100 rounded-3xl border border-slate-200 overflow-hidden"
-                            id="editPreview"></div>
+                        <div class="w-full h-full bg-slate-100 rounded-2xl overflow-hidden" id="editPreview"></div>
                         <div
-                            class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all rounded-3xl">
-                            <span class="text-white font-bold text-[10px] uppercase tracking-widest">Click to Replace
-                                Image</span>
+                            class="absolute inset-0 bg-admin-blue/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all rounded-2xl">
+                            <span class="text-white font-bold text-[10px] uppercase tracking-widest">Replace Image</span>
                         </div>
                     </div>
                 </div>
@@ -166,19 +176,21 @@
                 <div class="relative flex flex-col gap-1">
                     <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Description</label>
                     <textarea name="description" id="editDesc" required
-                        class="input-field w-full h-32 py-3 resize-none custom-scrollbar"></textarea>
-                </div>
-
-                <div
-                    class="flex items-center justify-between mt-4 sticky bottom-0 bg-white pb-2 pt-4 border-t border-slate-50">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="editActive" name="is_active">
-                        <div class="toggle-bg"></div>
-                        <span id="csrStatusLabel" class="ml-3 font-bold text-slate-600 text-sm">Active</span>
-                    </label>
-                    <button type="submit" class="btn-primary h-10">Update CSR Item</button>
+                        class="input-field w-full h-48 py-3 resize-none custom-scrollbar"></textarea>
                 </div>
             </form>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-4 shrink-0 bg-white">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="editActive" name="is_active">
+                    <div class="toggle-bg"></div>
+                    <span id="csrStatusLabel" class="ml-3 font-bold text-slate-600 text-sm">Active</span>
+                </label>
+
+                <button type="submit" form="editForm" class="btn-primary h-10">
+                    Update Profile
+                </button>
+            </div>
         </div>
     </div>
 @endsection

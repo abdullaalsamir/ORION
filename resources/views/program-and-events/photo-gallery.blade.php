@@ -13,13 +13,21 @@
                     $imageUrls = $galleries->map(function ($g) {
                         return asset('storage/' . $g->file_path);
                     })->toJson();
+
+                    $thumbUrls = $galleries->map(function ($g) {
+                        $base = basename($g->file_path, '.webp');
+                        return asset('storage/' . dirname($g->file_path) . '/thumbs/' . $base . '-250.webp');
+                    })->toJson();
+
+                    $firstBase = basename($firstImg->file_path, '.webp');
+                    $firstThumb = dirname($firstImg->file_path) . '/thumbs/' . $firstBase . '-700.webp';
                 @endphp
 
                 <div class="cursor-pointer group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-orion-blue transition-colors duration-200"
-                    onclick="openGalleryModal('{{ $concern->menu->name }}', {{ $imageUrls }})">
+                    onclick="openGalleryModal('{{ addslashes($concern->menu->name) }}', {{ $imageUrls }}, {{ $thumbUrls }})">
 
-                    <div class="w-full aspect-23/9 overflow-hidden shimmer bg-white relative">
-                        <img src="{{ asset('storage/' . $firstImg->file_path) }}" class="w-full h-full object-cover"
+                    <div class="w-full aspect-20/9 overflow-hidden shimmer bg-white relative">
+                        <img src="{{ asset('storage/' . $firstThumb) }}" class="w-full h-full object-cover"
                             onload="this.parentElement.classList.remove('shimmer')" alt="{{ $concern->menu->name }}">
                     </div>
 
@@ -53,7 +61,7 @@
         <div class="swiper mainGallerySwiper absolute inset-0 z-100">
 
             <div class="absolute inset-0 z-50 flex justify-center items-center pointer-events-none">
-                <div class="relative w-full max-w-[calc(100vh*23/9)]">
+                <div class="relative w-full max-w-[calc(100vh*20/9)]">
                     <img id="galleryTitlePlaceholder" src=""
                         class="w-full h-auto opacity-0 invisible pointer-events-none select-none">
 
@@ -93,7 +101,7 @@
 
         .thumbsGallerySwiper .swiper-slide {
             width: 200px;
-            aspect-ratio: 23 / 9;
+            aspect-ratio: 20 / 9;
             flex-shrink: 0;
             opacity: 0.4;
             transition: all .25s ease;

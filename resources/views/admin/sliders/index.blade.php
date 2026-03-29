@@ -30,7 +30,7 @@
                             <div class="absolute inset-0 shimmer" id="shimmer-{{ $slider->id }}"></div>
 
                             <img src="{{ asset('storage/sliders/thumbs/' . basename($slider->image_path)) }}?v={{ $slider->updated_at->timestamp }}"
-                                class="w-full h-full object-cover transition-opacity duration-300 opacity-0 {{ !$slider->is_active ? 'grayscale' : '' }}"
+                                class="w-full h-full object-cover transition-opacity duration-300 opacity-0"
                                 onload="this.classList.remove('opacity-0'); document.getElementById('shimmer-{{ $slider->id }}').remove();">
                         </div>
 

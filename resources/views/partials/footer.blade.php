@@ -5,10 +5,6 @@
                 return null;
             }
 
-            if ($item['menu_id'] === 'career') {
-                return (object) ['name' => 'Career', 'full_slug' => 'career'];
-            }
-
             if ($item['menu_id'] === 'sitemap') {
                 return (object) ['name' => 'Sitemap', 'full_slug' => 'sitemap'];
             }
@@ -67,15 +63,30 @@
                         </div>
                     </div>
 
-                    <div class="flex-1 min-h-68 rounded-lg overflow-hidden border border-white/10 opacity-90 mt-1">
+                    <div
+                        class="relative flex-1 min-h-68 rounded-lg overflow-hidden border border-white/10 mt-1 map-wrapper">
+
                         @if($footer->map_url)
-                            <iframe src="{{ $footer->map_url }}" width="100%" height="100%" style="border:0;"
-                                allowfullscreen="" loading="lazy"></iframe>
+
+                            <div
+                                class="map-loader absolute inset-0 flex items-center justify-center bg-stone-100 transition-opacity duration-500">
+                                <div class="h-60 flex items-center justify-center">
+                                    <x-map-loader />
+                                </div>
+                            </div>
+
+                            <iframe class="map-frame opacity-0 transition-opacity duration-700"
+                                data-src="{{ $footer->map_url }}" width="100%" height="100%" style="border:0;"
+                                loading="lazy">
+                            </iframe>
+
                         @else
                             <div
-                                class="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 italic text-sm">
-                                Map not configured</div>
+                                class="w-full h-full bg-stone-100 flex items-center justify-center text-slate-500 italic text-sm">
+                                Map not configured
+                            </div>
                         @endif
+
                     </div>
                 </div>
             </div>

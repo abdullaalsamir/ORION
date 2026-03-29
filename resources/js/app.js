@@ -5,6 +5,7 @@ import './core/scroll'
 import './ui/navbar'
 import './ui/newsTicker'
 import './ui/videoPlayer'
+import './ui/mapLoader'
 
 import './swiper/homeSwiper'
 import './swiper/businessesSwiper'

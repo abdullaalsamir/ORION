@@ -2,7 +2,7 @@
 @section('title', $menu->name)
 
 @section('content')
-    <div class="flex flex-col px-4 md:px-0 mb-12 mt-2">
+    <div class="flex flex-col">
         <div class="w-full">
             @if(!empty($menu->content))
                 <div class="page-content prose max-w-none text-slate-600 mt-2">

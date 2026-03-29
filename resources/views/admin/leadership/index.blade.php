@@ -24,9 +24,13 @@
                         </div>
 
                         <div
-                            class="w-20 aspect-3/4 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2">
-                            <img src="{{ asset('storage/' . $item->image_path) }}"
-                                class="w-full h-full object-cover transition-all duration-500">
+                            class="w-20 aspect-3/4 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 ml-2 relative">
+
+                            <div class="absolute inset-0 shimmer" id="shimmer-{{ $item->id }}"></div>
+
+                            <img src="{{ asset('storage/leadership/thumbs/' . basename($item->image_path)) }}?v={{ $item->updated_at->timestamp }}"
+                                class="w-full h-full object-cover transition-opacity duration-300 opacity-0 {{ !$item->is_active ? 'grayscale' : '' }}"
+                                onload="this.classList.remove('opacity-0'); document.getElementById('shimmer-{{ $item->id }}').remove();">
                         </div>
 
                         <div class="flex-1 min-w-0 flex flex-col gap-0.5 ml-4 self-start">
@@ -45,8 +49,7 @@
                         </div>
 
                         <div class="flex items-center border-l pl-4 border-slate-100 space-x-1">
-                            <button class="btn-icon w-8 p-1.5!"
-                                onclick="openLeadershipEditModal({{ json_encode($item) }}, '{{ $menu->full_slug }}')">
+                            <button class="btn-icon w-8 p-1.5!" onclick="openLeadershipEditModal({{ json_encode($item) }})">
                                 <i class="fas fa-pencil text-xs"></i>
                             </button>
                             <button class="btn-danger w-8 p-1.5!" onclick="deleteLeadership({{ $item->id }})">
@@ -76,7 +79,7 @@
             </div>
 
             <form id="addForm" action="{{ route('admin.leadership.store') }}" method="POST" enctype="multipart/form-data"
-                class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6">
+                class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
                 <div class="grid grid-cols-15 gap-10">
                     <div class="col-span-4 flex flex-col items-center">
@@ -133,7 +136,7 @@
                 </button>
             </div>
 
-            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar px-2 py-6 space-y-6">
+            <form id="editForm" class="flex-1 overflow-y-auto custom-scrollbar pr-2 py-6 space-y-6">
                 @csrf
                 <input type="file" name="image" id="editInput" accept="image/*" class="hidden"
                     onchange="handlePreview(this, 'editPreview')">

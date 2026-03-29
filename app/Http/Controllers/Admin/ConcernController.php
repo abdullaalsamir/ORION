@@ -82,19 +82,34 @@ class ConcernController extends Controller
         try {
             $concern = Concern::firstOrCreate(['menu_id' => $menu->id]);
 
-            if ($concern->cover_photo_path && Storage::disk('public')->exists($concern->cover_photo_path)) {
-                Storage::disk('public')->delete($concern->cover_photo_path);
+            if ($concern->cover_photo_path) {
+                $oldPath = $concern->cover_photo_path;
+                $oldBase = basename($oldPath, '.webp');
+                $oldThumbDir = dirname($oldPath) . '/thumbs';
+
+                Storage::disk('public')->delete([
+                    $oldPath,
+                    "{$oldThumbDir}/{$oldBase}-200.webp",
+                    "{$oldThumbDir}/{$oldBase}-700.webp"
+                ]);
             }
 
-            $fileName = time() . '.webp';
+            $baseName = time();
+            $fileName = $baseName . '.webp';
             $relativeDir = "concerns/{$menu->slug}/cover-photo";
+            $thumbDir = "{$relativeDir}/thumbs";
 
-            if (!Storage::disk('public')->exists($relativeDir)) {
-                Storage::disk('public')->makeDirectory($relativeDir);
+            if (!Storage::disk('public')->exists($thumbDir)) {
+                Storage::disk('public')->makeDirectory($thumbDir);
             }
 
-            $fullPath = storage_path("app/public/{$relativeDir}/{$fileName}");
-            $this->processConcernImage($request->file('image')->getRealPath(), $fullPath, 10 / 4);
+            $mainPath = storage_path("app/public/{$relativeDir}/{$fileName}");
+            $thumb200Path = storage_path("app/public/{$thumbDir}/{$baseName}-200.webp");
+            $thumb700Path = storage_path("app/public/{$thumbDir}/{$baseName}-700.webp");
+
+            $this->processConcernImage($request->file('image')->getRealPath(), $mainPath, 20 / 9, 1500);
+            $this->processConcernImage($request->file('image')->getRealPath(), $thumb200Path, 20 / 9, 200);
+            $this->processConcernImage($request->file('image')->getRealPath(), $thumb700Path, 20 / 9, 700);
 
             $concern->update(['cover_photo_path' => "{$relativeDir}/{$fileName}"]);
 
@@ -107,8 +122,17 @@ class ConcernController extends Controller
     public function deleteCover(Menu $menu)
     {
         $concern = Concern::where('menu_id', $menu->id)->first();
-        if ($concern && $concern->cover_photo_path && Storage::disk('public')->exists($concern->cover_photo_path)) {
-            Storage::disk('public')->delete($concern->cover_photo_path);
+        if ($concern && $concern->cover_photo_path) {
+            $oldPath = $concern->cover_photo_path;
+            $oldBase = basename($oldPath, '.webp');
+            $oldThumbDir = dirname($oldPath) . '/thumbs';
+
+            Storage::disk('public')->delete([
+                $oldPath,
+                "{$oldThumbDir}/{$oldBase}-200.webp",
+                "{$oldThumbDir}/{$oldBase}-700.webp"
+            ]);
+
             $concern->update(['cover_photo_path' => null]);
         }
         return response()->json(['success' => true]);
@@ -124,19 +148,32 @@ class ConcernController extends Controller
         try {
             $concern = Concern::firstOrCreate(['menu_id' => $menu->id]);
             $relativeDir = "concerns/{$menu->slug}/photo-gallery";
+            $sliderDir = "concerns/{$menu->slug}/concern-slider";
+            $thumbDir = "{$relativeDir}/thumbs";
 
-            if (!Storage::disk('public')->exists($relativeDir)) {
-                Storage::disk('public')->makeDirectory($relativeDir);
-            }
+            if (!Storage::disk('public')->exists($thumbDir))
+                Storage::disk('public')->makeDirectory($thumbDir);
+            if (!Storage::disk('public')->exists($sliderDir))
+                Storage::disk('public')->makeDirectory($sliderDir);
 
             $currentMaxOrder = $concern->galleries()->max('order') ?? 0;
             $baseTime = time();
 
             foreach ($request->file('photos') as $index => $file) {
-                $fileName = ($baseTime + $index) . '.webp';
-                $fullPath = storage_path("app/public/{$relativeDir}/{$fileName}");
+                $baseName = $baseTime + $index;
+                $fileName = $baseName . '.webp';
 
-                $this->processConcernImage($file->getRealPath(), $fullPath, 23 / 9);
+                $mainPath = storage_path("app/public/{$relativeDir}/{$fileName}");
+                $sliderPath = storage_path("app/public/{$sliderDir}/{$fileName}");
+                $thumb250Path = storage_path("app/public/{$thumbDir}/{$baseName}-250.webp");
+                $thumb350Path = storage_path("app/public/{$thumbDir}/{$baseName}-350.webp");
+                $thumb700Path = storage_path("app/public/{$thumbDir}/{$baseName}-700.webp");
+
+                $this->processConcernImage($file->getRealPath(), $mainPath, 20 / 9, 2000);
+                $this->processConcernImage($file->getRealPath(), $sliderPath, 23 / 9, 2000);
+                $this->processConcernImage($file->getRealPath(), $thumb250Path, 20 / 9, 250);
+                $this->processConcernImage($file->getRealPath(), $thumb350Path, 20 / 9, 350);
+                $this->processConcernImage($file->getRealPath(), $thumb700Path, 20 / 9, 700);
 
                 $concern->galleries()->create([
                     'file_path' => "{$relativeDir}/{$fileName}",
@@ -155,20 +192,45 @@ class ConcernController extends Controller
         $request->validate(['image' => 'required|image|mimes:jpg,jpeg,png,webp|max:102400']);
 
         try {
-            if (Storage::disk('public')->exists($concernGallery->file_path)) {
-                Storage::disk('public')->delete($concernGallery->file_path);
-            }
-
-            $fileName = time() . '.webp';
+            $oldPath = $concernGallery->file_path;
+            $oldBase = basename($oldPath, '.webp');
             $menuSlug = $concernGallery->concern->menu->slug;
+
+            $oldDir = dirname($oldPath);
+            $oldThumbDir = "{$oldDir}/thumbs";
+            $oldSliderDir = "concerns/{$menuSlug}/concern-slider";
+
+            Storage::disk('public')->delete([
+                $oldPath,
+                "{$oldSliderDir}/{$oldBase}.webp",
+                "{$oldThumbDir}/{$oldBase}-250.webp",
+                "{$oldThumbDir}/{$oldBase}-350.webp",
+                "{$oldThumbDir}/{$oldBase}-700.webp"
+            ]);
+
+            $baseName = time();
+            $fileName = $baseName . '.webp';
+
             $relativeDir = "concerns/{$menuSlug}/photo-gallery";
+            $sliderDir = "concerns/{$menuSlug}/concern-slider";
+            $thumbDir = "{$relativeDir}/thumbs";
 
-            if (!Storage::disk('public')->exists($relativeDir)) {
-                Storage::disk('public')->makeDirectory($relativeDir);
-            }
+            if (!Storage::disk('public')->exists($thumbDir))
+                Storage::disk('public')->makeDirectory($thumbDir);
+            if (!Storage::disk('public')->exists($sliderDir))
+                Storage::disk('public')->makeDirectory($sliderDir);
 
-            $fullPath = storage_path("app/public/{$relativeDir}/{$fileName}");
-            $this->processConcernImage($request->file('image')->getRealPath(), $fullPath, 23 / 9);
+            $mainPath = storage_path("app/public/{$relativeDir}/{$fileName}");
+            $sliderPath = storage_path("app/public/{$sliderDir}/{$fileName}");
+            $thumb250Path = storage_path("app/public/{$thumbDir}/{$baseName}-250.webp");
+            $thumb350Path = storage_path("app/public/{$thumbDir}/{$baseName}-350.webp");
+            $thumb700Path = storage_path("app/public/{$thumbDir}/{$baseName}-700.webp");
+
+            $this->processConcernImage($request->file('image')->getRealPath(), $mainPath, 20 / 9, 2000);
+            $this->processConcernImage($request->file('image')->getRealPath(), $sliderPath, 23 / 9, 2000);
+            $this->processConcernImage($request->file('image')->getRealPath(), $thumb250Path, 20 / 9, 250);
+            $this->processConcernImage($request->file('image')->getRealPath(), $thumb350Path, 20 / 9, 350);
+            $this->processConcernImage($request->file('image')->getRealPath(), $thumb700Path, 20 / 9, 700);
 
             $concernGallery->update(['file_path' => "{$relativeDir}/{$fileName}"]);
 
@@ -180,9 +242,22 @@ class ConcernController extends Controller
 
     public function deleteGallery(ConcernGallery $concernGallery)
     {
-        if (Storage::disk('public')->exists($concernGallery->file_path)) {
-            Storage::disk('public')->delete($concernGallery->file_path);
-        }
+        $oldPath = $concernGallery->file_path;
+        $oldBase = basename($oldPath, '.webp');
+        $menuSlug = $concernGallery->concern->menu->slug;
+
+        $oldDir = dirname($oldPath);
+        $oldThumbDir = "{$oldDir}/thumbs";
+        $oldSliderDir = "concerns/{$menuSlug}/concern-slider";
+
+        Storage::disk('public')->delete([
+            $oldPath,
+            "{$oldSliderDir}/{$oldBase}.webp",
+            "{$oldThumbDir}/{$oldBase}-250.webp",
+            "{$oldThumbDir}/{$oldBase}-350.webp",
+            "{$oldThumbDir}/{$oldBase}-700.webp"
+        ]);
+
         $concernGallery->delete();
         return response()->json(['success' => true]);
     }
@@ -195,7 +270,7 @@ class ConcernController extends Controller
         return response()->json(['success' => true]);
     }
 
-    private function processConcernImage($sourcePath, $destinationPath, $targetRatio)
+    private function processConcernImage($sourcePath, $destinationPath, $targetRatio, $maxWidth = 1500)
     {
         ini_set('memory_limit', '1024M');
 
@@ -249,8 +324,8 @@ class ConcernController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 2000) {
-            $finalWidth = 2000;
+        if ($finalWidth > $maxWidth) {
+            $finalWidth = $maxWidth;
         }
         $finalHeight = $finalWidth / $targetRatio;
 

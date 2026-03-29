@@ -18,6 +18,30 @@ class VideoGalleryController extends Controller
         return view('admin.video-gallery.index', compact('menu', 'items'));
     }
 
+    private function generateUniqueFilename($title, $ignoreId = null)
+    {
+        $baseSlug = \Illuminate\Support\Str::slug($title);
+
+        if (empty($baseSlug)) {
+            $baseSlug = 'video';
+        }
+
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while (
+            VideoGallery::where(function ($query) use ($slug) {
+                $query->where('video_path', 'LIKE', "%/{$slug}.%")
+                    ->orWhere('thumbnail_path', 'LIKE', "%/{$slug}.%");
+            })->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))->exists()
+        ) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -29,16 +53,27 @@ class VideoGalleryController extends Controller
         try {
             if (!Storage::disk('public')->exists('video-gallery/videos')) {
                 Storage::disk('public')->makeDirectory('video-gallery/videos');
+            }
+            if (!Storage::disk('public')->exists('video-gallery/thumbnails')) {
                 Storage::disk('public')->makeDirectory('video-gallery/thumbnails');
             }
+            if (!Storage::disk('public')->exists('video-gallery/thumbnails/thumbs')) {
+                Storage::disk('public')->makeDirectory('video-gallery/thumbnails/thumbs');
+            }
 
-            $epoch = time() . '_' . uniqid();
-            $videoName = $epoch . '.' . $request->file('video')->getClientOriginalExtension();
+            $baseName = $this->generateUniqueFilename($request->title);
+
+            $videoName = $baseName . '.' . $request->file('video')->getClientOriginalExtension();
             $videoPath = $request->file('video')->storeAs('video-gallery/videos', $videoName, 'public');
 
-            $thumbName = $epoch . '.webp';
+            $thumbName = $baseName . '.webp';
             $thumbPath = "video-gallery/thumbnails/{$thumbName}";
-            $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), storage_path("app/public/{$thumbPath}"));
+
+            $mainThumbPath = storage_path("app/public/{$thumbPath}");
+            $smallThumbPath = storage_path("app/public/video-gallery/thumbnails/thumbs/{$thumbName}");
+
+            $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), $mainThumbPath, 1280);
+            $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), $smallThumbPath, 200);
 
             VideoGallery::create([
                 'title' => $request->title,
@@ -65,22 +100,41 @@ class VideoGalleryController extends Controller
 
         try {
             $data = ['title' => $request->title, 'is_active' => $request->is_active];
-            $epoch = time() . '_' . uniqid();
+            $baseName = $this->generateUniqueFilename($request->title, $videoGallery->id);
 
             if ($request->hasFile('video')) {
-                if (Storage::disk('public')->exists($videoGallery->video_path))
+                if (Storage::disk('public')->exists($videoGallery->video_path)) {
                     Storage::disk('public')->delete($videoGallery->video_path);
-                $videoName = $epoch . '.' . $request->file('video')->getClientOriginalExtension();
+                }
+
+                $videoName = $baseName . '.' . $request->file('video')->getClientOriginalExtension();
                 $data['video_path'] = $request->file('video')->storeAs('video-gallery/videos', $videoName, 'public');
             }
 
             if ($request->hasFile('thumbnail')) {
-                if (Storage::disk('public')->exists($videoGallery->thumbnail_path))
+                if (Storage::disk('public')->exists($videoGallery->thumbnail_path)) {
                     Storage::disk('public')->delete($videoGallery->thumbnail_path);
-                $thumbName = $epoch . '.webp';
+                    Storage::disk('public')->delete('video-gallery/thumbnails/thumbs/' . basename($videoGallery->thumbnail_path));
+                }
+
+                if (!Storage::disk('public')->exists('video-gallery/thumbnails/thumbs')) {
+                    Storage::disk('public')->makeDirectory('video-gallery/thumbnails/thumbs');
+                }
+
+                $thumbName = $baseName . '.webp';
                 $thumbPath = "video-gallery/thumbnails/{$thumbName}";
-                $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), storage_path("app/public/{$thumbPath}"));
+
+                $mainThumbPath = storage_path("app/public/{$thumbPath}");
+                $smallThumbPath = storage_path("app/public/video-gallery/thumbnails/thumbs/{$thumbName}");
+
+                $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), $mainThumbPath, 1280);
+                $this->processVideoThumbnail($request->file('thumbnail')->getRealPath(), $smallThumbPath, 200);
+
                 $data['thumbnail_path'] = $thumbPath;
+            }
+
+            if ($request->hasFile('video') || $request->hasFile('thumbnail')) {
+                $videoGallery->touch();
             }
 
             $videoGallery->update($data);
@@ -93,10 +147,14 @@ class VideoGalleryController extends Controller
     public function delete(VideoGallery $videoGallery)
     {
         try {
-            if (Storage::disk('public')->exists($videoGallery->video_path))
+            if (Storage::disk('public')->exists($videoGallery->video_path)) {
                 Storage::disk('public')->delete($videoGallery->video_path);
-            if (Storage::disk('public')->exists($videoGallery->thumbnail_path))
+            }
+            if (Storage::disk('public')->exists($videoGallery->thumbnail_path)) {
                 Storage::disk('public')->delete($videoGallery->thumbnail_path);
+                Storage::disk('public')->delete('video-gallery/thumbnails/thumbs/' . basename($videoGallery->thumbnail_path));
+            }
+
             $videoGallery->delete();
             return response()->json(['success' => true]);
         } catch (Exception $e) {
@@ -106,8 +164,9 @@ class VideoGalleryController extends Controller
 
     public function updateOrder(Request $request)
     {
-        foreach ($request->orders as $item)
+        foreach ($request->orders as $item) {
             VideoGallery::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
         return response()->json(['success' => true]);
     }
 
@@ -117,7 +176,7 @@ class VideoGalleryController extends Controller
         return view('video-gallery.index', compact('videos', 'menu'));
     }
 
-    private function processVideoThumbnail($sourcePath, $destinationPath)
+    private function processVideoThumbnail($sourcePath, $destinationPath, $maxWidth = 1280)
     {
         ini_set('memory_limit', '1024M');
         if (!extension_loaded('gd'))
@@ -130,6 +189,7 @@ class VideoGalleryController extends Controller
         $width = $info[0];
         $height = $info[1];
         $type = $info[2];
+
         switch ($type) {
             case IMAGETYPE_JPEG:
                 $src = imagecreatefromjpeg($sourcePath);
@@ -150,6 +210,7 @@ class VideoGalleryController extends Controller
 
         $targetRatio = 16 / 9;
         $currentRatio = $width / $height;
+
         if ($currentRatio > $targetRatio) {
             $cropWidth = $height * $targetRatio;
             $cropHeight = $height;
@@ -163,16 +224,20 @@ class VideoGalleryController extends Controller
         }
 
         $finalWidth = $cropWidth;
-        if ($finalWidth > 1280)
-            $finalWidth = 1280;
+        if ($finalWidth > $maxWidth) {
+            $finalWidth = $maxWidth;
+        }
         $finalHeight = $finalWidth / $targetRatio;
 
         $dst = imagecreatetruecolor($finalWidth, $finalHeight);
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
         imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $finalWidth, $finalHeight, $cropWidth, $cropHeight);
-        if (!imagewebp($dst, $destinationPath, 70))
+
+        if (!imagewebp($dst, $destinationPath, 70)) {
             throw new Exception('Failed to save WebP image.');
+        }
+
         imagedestroy($src);
         imagedestroy($dst);
     }
